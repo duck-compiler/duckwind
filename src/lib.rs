@@ -1,6 +1,8 @@
 #[cfg(test)]
 mod tests;
 
+mod lexer;
+
 #[derive(Debug, Clone)]
 pub struct CssDef {
     pub media_queries: Vec<String>,
