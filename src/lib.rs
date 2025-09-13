@@ -1,4 +1,4 @@
-use chumsky::Parser;
+use chumsky::{error::Rich, extra, prelude::any, Parser};
 
 use crate::{
     lexer::lexer,
@@ -11,6 +11,11 @@ mod tests;
 mod lexer;
 mod parser;
 mod css_data_types;
+mod config_css;
+
+pub fn ignore_whitespace<'a>() -> impl Parser<'a, &'a str, (), extra::Err<Rich<'a, char>>> {
+    any().filter(|c: &char| c.is_ascii_whitespace()).repeated()
+}
 
 #[derive(Debug, Clone, Default)]
 pub struct CssDef {

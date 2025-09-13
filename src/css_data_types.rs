@@ -39,9 +39,42 @@ pub enum Length {
     r#in(String),
     pc(String),
     pt(String),
+}
 
-    // Other
-    Percentage(String),
+impl Length {
+    pub fn to_css(self) -> String {
+        use Length::*;
+        match self {
+            cap(s) => format!("{s}cap"),
+            ch(s) => format!("{s}ch"),
+            em(s) => format!("{s}em"),
+            ex(s) => format!("{s}ex"),
+            ic(s) => format!("{s}ic"),
+            lh(s) => format!("{s}lh"),
+
+            rcap(s) => format!("{s}rcap"),
+            rch(s) => format!("{s}rch"),
+            rem(s) => format!("{s}rem"),
+            rex(s) => format!("{s}rex"),
+            ric(s) => format!("{s}ric"),
+            rlh(s) => format!("{s}rlh"),
+
+            vh(s) => format!("{s}vh"),
+            vw(s) => format!("{s}vw"),
+            vmax(s) => format!("{s}vmax"),
+            vmin(s) => format!("{s}vmin"),
+            vb(s) => format!("{s}vb"),
+            vi(s) => format!("{s}vi"),
+
+            px(s) => format!("{s}px"),
+            cm(s) => format!("{s}cm"),
+            mm(s) => format!("{s}mm"),
+            r#Q(s) => format!("{s}Q"),
+            r#in(s) => format!("{s}in"),
+            pc(s) => format!("{s}pc"),
+            pt(s) => format!("{s}pt"),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -63,24 +96,148 @@ pub enum Color {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CssDataType {
-    Length(Length),
-    Color(Color),
-    Ratio(Ratio),
-    Number(Number),
-    Fr(Fr),
+pub enum AbsoluteSize {
+    XxSmall,
+    XSmall,
+    Small,
+    Medium,
+    Large,
+    XLarge,
+    XxLarge,
+    XxxLarge,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Ratio(String, String);
+pub enum Angle {
+    Deg(String),
+    Grad(String),
+    Rad(String),
+    Turn(String),
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Fr(String);
+pub enum CssDataType {
+    Length(Length),
+    Color(Color),
+    Ratio(String, String),
+    Number(String),
+    Fr(String),
+    Integer(String),
+    Percentage(String),
+    AbsoluteSize(AbsoluteSize),
+    Angle(Angle),
+    Any,
+    Position(String),
+}
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Number(String);
+#[derive(Debug, Clone)]
+pub enum Position {
+    Left,
+    Right,
+    Top,
+    Bottom,
+    Center,
+    Length(Length),
+    Percentage(String),
+}
 
-pub fn ratio_parser<'a>() -> impl Parser<'a, &'a str, Ratio, extra::Err<Rich<'a, char>>> + Clone {
+pub fn single_position_parser<'a>()
+-> impl Parser<'a, &'a str, Position, extra::Err<Rich<'a, char>>> + Clone {
+    choice((
+        just("left").map(|_| Position::Left),
+        just("right").map(|_| Position::Right),
+        just("top").map(|_| Position::Top),
+        just("bottom").map(|_| Position::Bottom),
+        just("center").map(|_| Position::Center),
+        length_parser().map(Position::Length),
+        percentage_parser().map(Position::Percentage),
+    ))
+}
+
+pub fn position_parser<'a>()
+-> impl Parser<'a, &'a str, Vec<Position>, extra::Err<Rich<'a, char>>> + Clone {
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/position_value
+    choice((
+        single_position_parser()
+            .then_ignore(
+                any()
+                    .filter(|c: &char| c.is_ascii_whitespace())
+                    .repeated()
+                    .at_least(1),
+            )
+            .then(single_position_parser())
+            .then_ignore(
+                any()
+                    .filter(|c: &char| c.is_ascii_whitespace())
+                    .repeated()
+                    .at_least(1),
+            )
+            .then(single_position_parser())
+            .then_ignore(
+                any()
+                    .filter(|c: &char| c.is_ascii_whitespace())
+                    .repeated()
+                    .at_least(1),
+            )
+            .then(single_position_parser())
+            .filter(|(((a, b), c), d)| {
+                (matches!(a, Position::Left | Position::Right)
+                    && matches!(b, Position::Percentage(..) | Position::Length(..))
+                    && matches!(c, Position::Top | Position::Bottom)
+                    && matches!(d, Position::Percentage(..) | Position::Length(..)))
+                    || (matches!(c, Position::Left | Position::Right)
+                        && matches!(b, Position::Percentage(..) | Position::Length(..))
+                        && matches!(a, Position::Top | Position::Bottom)
+                        && matches!(d, Position::Percentage(..) | Position::Length(..)))
+            })
+            .map(|(((a, b), c), d)| vec![a, b, c, d]),
+        single_position_parser()
+            .then_ignore(
+                any()
+                    .filter(|c: &char| c.is_ascii_whitespace())
+                    .repeated()
+                    .at_least(1),
+            )
+            .then(single_position_parser())
+            .filter(|(a, b)| {
+                (matches!(a, Position::Left | Position::Center | Position::Right)
+                    && matches!(b, Position::Top | Position::Center | Position::Bottom))
+                    || (matches!(b, Position::Left | Position::Center | Position::Right)
+                        && matches!(a, Position::Top | Position::Center | Position::Bottom))
+            })
+            .map(|(a, b)| vec![a, b]),
+        single_position_parser()
+            .then_ignore(
+                any()
+                    .filter(|c: &char| c.is_ascii_whitespace())
+                    .repeated()
+                    .at_least(1),
+            )
+            .then(single_position_parser())
+            .filter(|(a, b)| {
+                matches!(
+                    a,
+                    Position::Left
+                        | Position::Center
+                        | Position::Right
+                        | Position::Percentage(..)
+                        | Position::Length(..)
+                ) && matches!(
+                    b,
+                    Position::Top
+                        | Position::Center
+                        | Position::Bottom
+                        | Position::Percentage(..)
+                        | Position::Length(..)
+                )
+            })
+            .map(|(a, b)| vec![a, b]),
+        single_position_parser().map(|x| vec![x]),
+    ))
+}
+
+pub fn ratio_parser<'a>()
+-> impl Parser<'a, &'a str, (String, String), extra::Err<Rich<'a, char>>> + Clone {
     any()
         .filter(|c: &char| c.is_ascii_digit() || *c == '.')
         .repeated()
@@ -96,36 +253,142 @@ pub fn ratio_parser<'a>() -> impl Parser<'a, &'a str, Ratio, extra::Err<Rich<'a,
                 .at_least(1)
                 .collect::<String>(),
         )
-        .map(|(a, b)| Ratio(a, b))
 }
 
-pub fn fr_parser<'a>() -> impl Parser<'a, &'a str, Fr, extra::Err<Rich<'a, char>>> + Clone {
+pub fn fr_parser<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     any()
         .filter(|c: &char| c.is_ascii_digit() || *c == '.')
         .repeated()
         .at_least(1)
         .collect::<String>()
         .then_ignore(just("fr"))
-        .map(Fr)
 }
 
-pub fn number_parser<'a>() -> impl Parser<'a, &'a str, Number, extra::Err<Rich<'a, char>>> + Clone {
+pub fn integer_parser<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone
+{
+    any()
+        .filter(|c: &char| c.is_ascii_digit() || *c == '-')
+        .repeated()
+        .at_least(1)
+        .collect::<String>()
+}
+
+pub fn percentage_parser<'a>()
+-> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
+    any()
+        .filter(|c: &char| c.is_ascii_digit() || *c == '.' || *c == '-')
+        .repeated()
+        .at_least(1)
+        .collect::<String>()
+        .then_ignore(just("%"))
+}
+
+pub fn number_parser<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
+    any()
+        .filter(|c: &char| c.is_ascii_digit() || *c == '-' || *c == '.')
+        .repeated()
+        .at_least(1)
+        .collect::<String>()
+        .filter(|s| s.contains('.'))
+}
+
+pub fn angle_parser<'a>() -> impl Parser<'a, &'a str, Angle, extra::Err<Rich<'a, char>>> + Clone {
     any()
         .filter(|c: &char| c.is_ascii_digit() || *c == '.')
         .repeated()
         .at_least(1)
         .collect::<String>()
-        .map(Number)
+        .then(choice((
+            just("deg"),
+            just("grad"),
+            just("rad"),
+            just("turn"),
+        )))
+        .map(|(s, unit)| {
+            use Angle::*;
+
+            let con = match unit {
+                "deg" => Deg,
+                "grad" => Grad,
+                "rad" => Rad,
+                "turn" => Turn,
+                _ => panic!("angle {unit:?} not implemented"),
+            };
+            con(s)
+        })
+}
+
+pub fn absolute_size_parser<'a>()
+-> impl Parser<'a, &'a str, AbsoluteSize, extra::Err<Rich<'a, char>>> + Clone {
+    choice((
+        just("xx-small"),
+        just("x-small"),
+        just("small"),
+        just("medium"),
+        just("large"),
+        just("x-large"),
+        just("xx-large"),
+        just("xxx-large"),
+    ))
+    .map(|size| {
+        use AbsoluteSize::*;
+        let value = match size {
+            "xx-small" => XxSmall,
+            "x-small" => XSmall,
+            "small" => Small,
+            "medium" => Medium,
+            "large" => Large,
+            "x-large" => XLarge,
+            "xx-large" => XxLarge,
+            "xxx-large" => XxxLarge,
+            _ => panic!("{size:?} not implemented"),
+        };
+
+        value
+    })
 }
 
 pub fn data_type_parser<'a>()
 -> impl Parser<'a, &'a str, CssDataType, extra::Err<Rich<'a, char>>> + Clone {
     choice((
-        ratio_parser().map(CssDataType::Ratio),
+        position_parser().map(|x| {
+            if x.len() == 1
+                && let Some(Position::Length(l)) = x.first()
+            {
+                return CssDataType::Length(l.clone());
+            }
+
+            if x.len() == 1
+                && let Some(Position::Percentage(p)) = x.first()
+            {
+                return CssDataType::Percentage(p.clone());
+            }
+
+            CssDataType::Position(
+                x.into_iter()
+                    .map(|x| match x {
+                        Position::Top => "top".to_string(),
+                        Position::Bottom => "bottom".to_string(),
+                        Position::Left => "left".to_string(),
+                        Position::Right => "right".to_string(),
+                        Position::Center => "center".to_string(),
+                        Position::Percentage(p) => format!("{p}%"),
+                        Position::Length(l) => l.to_css(),
+                    })
+                    .collect::<Vec<_>>()
+                    .join(" "),
+            )
+        }),
+        ratio_parser().map(|(a, b)| CssDataType::Ratio(a, b)),
         fr_parser().map(CssDataType::Fr),
         color_parser().map(CssDataType::Color),
+        angle_parser().map(CssDataType::Angle),
         length_parser().map(CssDataType::Length),
         number_parser().map(CssDataType::Number),
+        percentage_parser().map(CssDataType::Percentage),
+        integer_parser().map(CssDataType::Integer),
+        absolute_size_parser().map(CssDataType::AbsoluteSize),
+        just("*").map(|_| CssDataType::Any),
     ))
 }
 
@@ -235,7 +498,7 @@ pub fn color_parser<'a>() -> impl Parser<'a, &'a str, Color, extra::Err<Rich<'a,
 
 pub fn length_parser<'a>() -> impl Parser<'a, &'a str, Length, extra::Err<Rich<'a, char>>> + Clone {
     any()
-        .filter(|c: &char| c.is_ascii_digit() || *c == '.')
+        .filter(|c: &char| c.is_ascii_digit() || *c == '.' || *c == '-')
         .repeated()
         .at_least(1)
         .collect::<String>()
@@ -265,7 +528,6 @@ pub fn length_parser<'a>() -> impl Parser<'a, &'a str, Length, extra::Err<Rich<'
             just("in"),
             just("pc"),
             just("pt"),
-            just("%"),
         )))
         .map(|(a, b)| {
             use Length::*;
@@ -299,7 +561,6 @@ pub fn length_parser<'a>() -> impl Parser<'a, &'a str, Length, extra::Err<Rich<'
                 "in" => r#in,
                 "pc" => pc,
                 "pt" => pt,
-                "%" => Percentage,
                 _ => panic!("unknown unit {a:?}"),
             };
             con(a)
@@ -311,7 +572,7 @@ mod tests {
     use chumsky::Parser;
 
     use crate::css_data_types::{
-        Color, Fr, Number, Ratio, color_parser, data_type_parser, fr_parser, length_parser,
+        AbsoluteSize, Angle, Color, color_parser, data_type_parser, fr_parser, length_parser,
         number_parser, ratio_parser,
     };
 
@@ -322,11 +583,7 @@ mod tests {
         let test_cases = {
             use super::Length::*;
 
-            vec![
-                ("1px", px("1".to_string())),
-                ("2px", px("2".to_string())),
-                ("34.5%", Percentage("34.5".to_string())),
-            ]
+            vec![("1px", px("1".to_string())), ("2px", px("2".to_string()))]
         };
 
         for (src, expected) in test_cases {
@@ -373,10 +630,10 @@ mod tests {
     #[test]
     fn test_ratio_parsing() {
         let test_cases = vec![
-            ("3/2", Ratio("3".to_string(), "2".to_string())),
-            ("3 / 2", Ratio("3".to_string(), "2".to_string())),
-            ("3/ 2", Ratio("3".to_string(), "2".to_string())),
-            ("3 /2", Ratio("3".to_string(), "2".to_string())),
+            ("3/2", ("3".to_string(), "2".to_string())),
+            ("3 / 2", ("3".to_string(), "2".to_string())),
+            ("3/ 2", ("3".to_string(), "2".to_string())),
+            ("3 /2", ("3".to_string(), "2".to_string())),
         ];
 
         for (src, expected) in test_cases {
@@ -391,38 +648,29 @@ mod tests {
 
     #[test]
     fn test_fr_parsing() {
-        let test_cases = vec![
-            ("3fr", Fr("3".to_string())),
-            (".4fr", Fr(".4".to_string())),
-            ("3.4fr", Fr("3.4".to_string())),
-            ("23.134fr", Fr("23.134".to_string())),
-        ];
+        let test_cases = vec!["3fr", ".4fr", "3.4fr", "23.134fr"];
 
-        for (src, expected) in test_cases {
+        for src in test_cases {
             let l = fr_parser()
                 .parse(src)
                 .into_result()
                 .expect(&format!("fr parse error {src:?}"));
 
-            assert_eq!(l, expected, "error: {src:?}");
+            assert_eq!(l, src.replace("fr", ""), "error: {src:?}");
         }
     }
 
     #[test]
     fn test_number_parsing() {
-        let test_cases = vec![
-            ("3", Number("3".to_string())),
-            ("3.14", Number("3.14".to_string())),
-            ("23.134", Number("23.134".to_string())),
-        ];
+        let test_cases = vec!["3.14", "23.134"];
 
-        for (src, expected) in test_cases {
+        for src in test_cases {
             let l = number_parser()
                 .parse(src)
                 .into_result()
                 .expect(&format!("number parse error {src:?}"));
 
-            assert_eq!(l, expected, "error: {src:?}");
+            assert_eq!(l, src, "error: {src:?}");
         }
     }
 
@@ -430,16 +678,42 @@ mod tests {
     fn test_full_parser() {
         use super::CssDataType;
         let test_cases = vec![
-            ("3", CssDataType::Number(Number("3".to_string()))),
-            ("3.14", CssDataType::Number(Number("3.14".to_string()))),
-            ("23.134", CssDataType::Number(Number("23.134".to_string()))),
-            ("23.134fr", CssDataType::Fr(Fr("23.134".to_string()))),
+            ("3", CssDataType::Integer("3".to_string())),
+            ("3.14", CssDataType::Number("3.14".to_string())),
+            ("23.134", CssDataType::Number("23.134".to_string())),
+            ("23.134fr", CssDataType::Fr("23.134".to_string())),
+            ("-6px", CssDataType::Length(Length::px("-6".to_string()))),
+            (
+                "120vmin",
+                CssDataType::Length(Length::vmin("120".to_string())),
+            ),
             ("red", CssDataType::Color(Color::Named("red".to_string()))),
             ("1px", CssDataType::Length(Length::px("1".to_string()))),
+            ("8rem", CssDataType::Length(Length::rem("8".to_string()))),
+            ("14rem", CssDataType::Length(Length::rem("14".to_string()))),
+            ("1/3", CssDataType::Ratio("1".to_string(), "3".to_string())),
+            ("100%", CssDataType::Percentage("100".to_string())),
+            ("xx-small", CssDataType::AbsoluteSize(AbsoluteSize::XxSmall)),
             (
-                "1/3",
-                CssDataType::Ratio(Ratio("1".to_string(), "3".to_string())),
+                "34.5deg",
+                CssDataType::Angle(Angle::Deg("34.5".to_string())),
             ),
+            ("center", CssDataType::Position("center".to_string())),
+            ("left", CssDataType::Position("left".to_string())),
+            (
+                "center top",
+                CssDataType::Position("center top".to_string()),
+            ),
+            (
+                "right 8.5%",
+                CssDataType::Position("right 8.5%".to_string()),
+            ),
+            (
+                "bottom 12vmin right -6px",
+                CssDataType::Position("bottom 12vmin right -6px".to_string()),
+            ),
+            ("10% 20%", CssDataType::Position("10% 20%".to_string())),
+            ("8rem 14px", CssDataType::Position("8rem 14px".to_string())),
         ];
 
         for (src, expected) in test_cases {
@@ -447,6 +721,10 @@ mod tests {
                 .parse(src)
                 .into_result()
                 .expect(&format!("full parse error {src:?}"));
+
+            if src.starts_with("bottom") {
+                dbg!(&l);
+            }
 
             assert_eq!(l, expected, "error: {src:?}");
         }
