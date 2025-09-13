@@ -10,6 +10,7 @@ mod tests;
 
 mod lexer;
 mod parser;
+mod css_data_types;
 
 #[derive(Debug, Clone, Default)]
 pub struct CssDef {
