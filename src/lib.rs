@@ -215,6 +215,34 @@ impl EmitEnv {
                 // is built-in
                 match &v[0].0 {
                     ParsedUnit::String(s) => match s.as_str() {
+                        "peer" => match &v[1].0 {
+                            ParsedUnit::String(param_1) => {
+                                if let Some((param, peer_name)) = param_1.split_once("/") {
+                                    css_def.body = format!(
+                                        "&:is(:where(.peer{}):is(:{param}) ~ *) {{\n{}\n}}",
+                                        escape_string_for_css(&format!("/{peer_name}")),
+                                        css_def.body
+                                    );
+                                } else {
+                                    css_def.body = format!(
+                                        "&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{}\n}}",
+                                        css_def.body
+                                    );
+                                }
+                            }
+                            ParsedUnit::Raw(param_1) => {
+                                if param_1.contains("&") {
+                                    let replaced = param_1.replace("&", ":where(.peer) ~ *");
+                                    css_def.body =
+                                        format!("&:is({replaced}) {{\n{}\n}}", css_def.body);
+                                } else {
+                                    css_def.body = format!(
+                                        "&:is(:where(.peer):is({param_1}) ~ *) {{\n{}\n}}",
+                                        css_def.body
+                                    );
+                                }
+                            }
+                        }
                         "group" => match &v[1].0 {
                             ParsedUnit::String(param_1) => {
                                 if let Some((param, group_name)) = param_1.split_once("/") {
