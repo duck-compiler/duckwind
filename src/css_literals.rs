@@ -128,6 +128,7 @@ pub enum CssLiteral {
     Angle(Angle),
     Any,
     Position(String),
+    Other(String),
 }
 
 #[derive(Debug, Clone)]
@@ -389,6 +390,12 @@ pub fn data_type_parser<'a>()
         integer_parser().map(CssLiteral::Integer),
         absolute_size_parser().map(CssLiteral::AbsoluteSize),
         just("*").map(|_| CssLiteral::Any),
+        any()
+            .filter(|c: &char| !c.is_ascii_punctuation() && !c.is_ascii_whitespace())
+            .repeated()
+            .at_least(1)
+            .collect::<String>()
+            .map(CssLiteral::Other),
     ))
 }
 
@@ -694,20 +701,11 @@ mod tests {
             ("1/3", CssLiteral::Ratio("1".to_string(), "3".to_string())),
             ("100%", CssLiteral::Percentage("100".to_string())),
             ("xx-small", CssLiteral::AbsoluteSize(AbsoluteSize::XxSmall)),
-            (
-                "34.5deg",
-                CssLiteral::Angle(Angle::Deg("34.5".to_string())),
-            ),
+            ("34.5deg", CssLiteral::Angle(Angle::Deg("34.5".to_string()))),
             ("center", CssLiteral::Position("center".to_string())),
             ("left", CssLiteral::Position("left".to_string())),
-            (
-                "center top",
-                CssLiteral::Position("center top".to_string()),
-            ),
-            (
-                "right 8.5%",
-                CssLiteral::Position("right 8.5%".to_string()),
-            ),
+            ("center top", CssLiteral::Position("center top".to_string())),
+            ("right 8.5%", CssLiteral::Position("right 8.5%".to_string())),
             (
                 "bottom 12vmin right -6px",
                 CssLiteral::Position("bottom 12vmin right -6px".to_string()),

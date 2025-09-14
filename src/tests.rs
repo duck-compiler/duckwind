@@ -20,20 +20,27 @@ fn test_css_escape() {
 #[test]
 fn test_css_def() {
     let mut emit_env = EmitEnv::default();
-    emit_env.parse_tailwind_str("text-[3rem]");
-    assert!(false);
+    emit_env.load_config(r#"
+        @utility brightness-none {
+            filter: none;
+        }
+
+        @utility brightness-* {
+            filter: brightness(--value([*]));
+        }
+    "#);
 
     let test_cases = vec![
-        ("hello", "hello"),
-        ("p-[100px]", r#"p-\[100px\]"#),
-        ("hover:bg-red", r#"hover\:bg-red"#),
-        ("hover:bg-[red]", r#"hover\:bg-\[red\]"#),
+        ("brightness-123", "a"),
     ];
+
     for (src, expected) in test_cases {
-        let escaped = escape_string_for_css(src);
-        assert_eq!(
-            expected, &escaped,
-            "{src} returned {escaped} and not {expected}"
-        );
+        let escaped = emit_env.parse_tailwind_str(src);
+        dbg!(escaped);
+        assert!(false);
+        // assert_eq!(
+        //     escaped, expected,
+        //     "{src} returned {escaped} and not {expected}"
+        // );
     }
 }
