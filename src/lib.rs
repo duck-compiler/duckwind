@@ -26,6 +26,8 @@ pub fn ignore_whitespace2<'a>() -> impl Parser<'a, &'a str, (), extra::Err<Rich<
 pub struct CssDef {
     pub media_queries: Vec<String>,
     pub selectors: Vec<String>,
+    pub pseudo_elements: Vec<String>,
+    pub class_name: String,
     pub body: String,
 }
 
@@ -48,18 +50,33 @@ pub fn escape_string_for_css(s: &str) -> String {
 impl CssDef {
     pub fn to_css(&self) -> String {
         let mut res = String::new();
-        let closing_braces = self.media_queries.len() + self.selectors.len();
-        for media_query in &self.media_queries {
-            res.push_str(&media_query);
+        let mut opening_braces = 0;
+        let media_query_part = self
+            .media_queries
+            .iter()
+            .map(|x| format!("({x})"))
+            .collect::<Vec<_>>()
+            .join(" and ");
+        if !media_query_part.is_empty() {
+            res.push_str(&media_query_part);
             res.push_str("{\n");
+            opening_braces += 1;
         }
+        res.push_str(&self.class_name);
+        for pseudo_elements in &self.pseudo_elements {
+            res.push_str(&format!("::{}", pseudo_elements));
+        }
+        res.push_str("{\n");
+        opening_braces += 1;
+
         for selector in &self.selectors {
             res.push_str(&selector);
             res.push_str("{\n");
+            opening_braces += 1;
         }
         res.push_str(self.body.as_str());
         res.push('\n');
-        for _ in 0..closing_braces {
+        for _ in 0..opening_braces {
             res.push_str("}\n");
         }
         res
@@ -91,6 +108,46 @@ impl EmitEnv {
             .into_output()?;
 
         let mut css_def = CssDef::default();
+        let class_name = escape_string_for_css(src);
+        css_def.class_name = class_name;
+
+        for (v, _) in parsed.0.variants.iter() {
+            match v {
+                ParsedUnit::String(v_str) => {
+                    if v_str == "before" {
+                        css_def.pseudo_elements.push("before".to_string());
+                    } else if v_str == "after" {
+                        css_def.pseudo_elements.push("after".to_string());
+                    } else if v_str == "placeholder" {
+                        css_def.pseudo_elements.push("placeholder".to_string());
+                    } else if v_str == "file" {
+                        css_def.pseudo_elements.push("file".to_string());
+                    } else if v_str == "selection" {
+                        css_def.pseudo_elements.push("selection".to_string());
+                    } else if v_str == "first-letter" {
+                        css_def.pseudo_elements.push("first-letter".to_string());
+                    } else if v_str == "first-line" {
+                        css_def.pseudo_elements.push("first-line".to_string());
+                    } else if v_str == "backdrop" {
+                        css_def.pseudo_elements.push("backdrop".to_string());
+                    }
+                }
+                ParsedUnit::Raw(raw_str) => {
+                    if raw_str.starts_with("::") {
+                        css_def.pseudo_elements.push(raw_str[2..].to_string());
+                    } else {
+                        css_def.selectors.push(raw_str.to_string());
+                    }
+                }
+            }
+        }
+
+        if parsed.0.utility.len() == 1
+            && let Some((ParsedUnit::Raw(raw_css), _)) = parsed.0.utility.first()
+        {
+            css_def.body = raw_css.to_owned();
+            return Some(css_def);
+        }
 
         let mut pre = parsed.0.utility[..parsed.0.utility.len() - 1]
             .iter()
@@ -108,7 +165,6 @@ impl EmitEnv {
             ParsedUnit::String(last_str) => {
                 pre.push(last_str.clone());
                 let full = pre.join("-");
-                let class_name = escape_string_for_css(full.as_str());
 
                 println!("{:?}", self.utilities);
                 for utility in self.utilities.iter() {
@@ -130,10 +186,6 @@ impl EmitEnv {
                 }
             }
             ParsedUnit::Raw(raw_value) => {
-                pre.push(raw_value.clone());
-                let full = pre.join("-");
-                let class_name = escape_string_for_css(full.as_str());
-
                 for utility in self.utilities.iter() {
                     if utility.name.as_str() == pre_str.as_str() && utility.has_value {
                         if let Ok(res) = utility.instantiate(Some(raw_value.as_str())) {

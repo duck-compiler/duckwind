@@ -31,7 +31,7 @@ fn test_css_def() {
     "#);
 
     let test_cases = vec![
-        ("brightness-123", "a"),
+        ("[::lol]:brightness-[123]", "a"),
     ];
 
     for (src, expected) in test_cases {
