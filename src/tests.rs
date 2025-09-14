@@ -20,25 +20,6 @@ fn test_css_escape() {
 #[test]
 fn test_css_def() {
     let mut emit_env = EmitEnv::default();
-    emit_env.load_config(r#"
-        @utility brightness-none {
-            filter: none;
-        }
-
-        @utility brightness-* {
-            filter: brightness(--value([*]));
-        }
-
-        @custom-variant hover {
-            @media (hover: hover) {
-                &:hover {
-                    @slot;
-                }
-            }
-        }
-    "#);
-
-    dbg!(&emit_env.variants);
 
     let test_cases = vec![
         ("hover:[::lol]:brightness-[123]", "a"),

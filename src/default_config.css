@@ -1,0 +1,23 @@
+@custom-variant hover {
+    &:hover {
+        @slot;
+    }
+}
+
+@custom-variant focus {
+    &:focus {
+        @slot;
+    }
+}
+
+@custom-variant first-child {
+    &:first-child {
+        @slot;
+    }
+}
+
+@custom-variant required {
+    &:required {
+        @slot;
+    }
+}

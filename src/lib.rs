@@ -1,4 +1,4 @@
-use chumsky::{error::Rich, extra, prelude::any, IterParser, Parser};
+use chumsky::{IterParser, Parser, error::Rich, extra, prelude::any};
 
 use crate::{
     config_css::{Utility, Variant, config_parser},
@@ -14,12 +14,17 @@ mod css_literals;
 mod lexer;
 mod parser;
 
+const DEFAULT_CONFIG: &'static str = include_str!("default_config.css");
+
 pub fn ignore_whitespace<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
     any().filter(|c: &char| *c == ' ').repeated().collect()
 }
 
 pub fn ignore_whitespace2<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
-    any().filter(|c: &char| c.is_whitespace()).repeated().collect()
+    any()
+        .filter(|c: &char| c.is_whitespace())
+        .repeated()
+        .collect()
 }
 
 #[derive(Debug, Clone, Default)]
@@ -64,16 +69,32 @@ impl CssDef {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct EmitEnv {
     pub defs: Vec<CssDef>,
     pub utilities: Vec<Utility>,
     pub variants: Vec<Variant>,
 }
 
+impl Default for EmitEnv {
+    fn default() -> Self {
+        EmitEnv::new_with_default_config()
+    }
+}
+
 impl EmitEnv {
-    pub fn new() -> Self {
-        Self::default()
+    // pub fn resolve_internal_variant(&self, v_str: &str) -> String {
+
+    // }
+
+    pub fn new_with_default_config() -> Self {
+        let mut res = EmitEnv {
+            defs: Vec::new(),
+            utilities: Vec::new(),
+            variants: Vec::new(),
+        };
+        res.load_config(DEFAULT_CONFIG);
+        res
     }
 
     pub fn load_config(&mut self, s: &str) {
