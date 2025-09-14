@@ -2,7 +2,8 @@ use chumsky::{
     IterParser, Parser,
     error::Rich,
     extra,
-    prelude::{any, choice, just},
+    input::Input,
+    prelude::{any, choice, just, recursive},
 };
 
 use crate::{
@@ -11,10 +12,18 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
-pub enum Variant {
-    MediaQuery(String),
-    PseudoElement(String),
-    Other(String),
+pub struct Variant {
+    pub name: String,
+    pub body: String,
+    pub target: usize,
+}
+
+impl Variant {
+    pub fn instantiate(&self, target: &str) -> String {
+        let mut res = self.body.clone();
+        res.insert_str(self.target, target);
+        res
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -208,8 +217,7 @@ impl ValueUsage {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-struct ValueCall {
-    pos: (usize, usize), // start, len
+pub struct ValueCall {
     params: Vec<ValueUsage>,
 }
 
@@ -261,10 +269,7 @@ pub fn parse_value_call<'a>() -> impl Parser<'a, &'a str, ValueCall, extra::Err<
                 .collect::<Vec<_>>(),
         )
         .then_ignore(just(")"))
-        .map_with(|x, e| ValueCall {
-            pos: (e.span().start, e.span().end),
-            params: x,
-        })
+        .map(|x| ValueCall { params: x })
 }
 
 #[derive(Debug, Clone)]
@@ -282,11 +287,76 @@ pub enum ParsedCodePart {
 #[derive(Debug, Clone)]
 pub enum ConfigUnit {
     Utility(Utility),
+    Variant(Variant),
 }
 
 // pub fn parse_nested_utility_code<'a>()
 // -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<'a, char>>> {
 // }
+//
+
+#[derive(Debug, Clone)]
+pub enum VariantParseUnit {
+    Target(usize),
+    Char(char),
+}
+
+pub fn variant_rec_text<'a>()
+-> impl Parser<'a, &'a str, Vec<VariantParseUnit>, extra::Err<Rich<'a, char>>> + Clone {
+    recursive(|s| {
+        just("{")
+            .ignore_then(
+                choice((
+                    just("{").rewind().ignore_then(s.clone()).map(
+                        |mut x: Vec<VariantParseUnit>| {
+                            x.insert(0, VariantParseUnit::Char('{'));
+                            x.push(VariantParseUnit::Char('}'));
+                            x
+                        },
+                    ),
+                    just("@slot;").map_with(|_, e| {
+                        let span: <&'static str as Input<'static>>::Span = e.span();
+                        vec![VariantParseUnit::Target(span.start)]
+                    }),
+                    any()
+                        .and_is(just("}").not())
+                        .map(|x| vec![VariantParseUnit::Char(x)]),
+                ))
+                .repeated()
+                .collect::<Vec<_>>(),
+            )
+            .then_ignore(just("}"))
+            .map(|x| x.into_iter().flat_map(Vec::into_iter).collect())
+    })
+}
+
+pub fn variant_parser<'a>() -> impl Parser<'a, &'a str, Variant, extra::Err<Rich<'a, char>>> {
+    just("@custom-variant")
+        .then(ignore_whitespace2())
+        .then(parse_utility_name())
+        .then(ignore_whitespace2())
+        .then_ignore(just("{").rewind())
+        .then(variant_rec_text())
+        .map(|((((a, b), name), d), units)| {
+            let mut s_buf = String::new();
+            let mut target = None;
+
+            for unit in units {
+                match unit {
+                    VariantParseUnit::Char(c) => s_buf.push(c),
+                    VariantParseUnit::Target(idx) => target = Some(idx),
+                }
+            }
+
+            let name_len = name.len();
+
+            Variant {
+                name,
+                body: s_buf,
+                target: target.expect("need target") - (a.len() + b.len() + d.len() + 1 + name_len),
+            }
+        })
+}
 
 pub fn parse_utility_name<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
     any()
@@ -303,31 +373,35 @@ pub fn parse_utility_name<'a>() -> impl Parser<'a, &'a str, String, extra::Err<R
 #[derive(Debug, Clone)]
 pub struct UserConfig {
     pub utilities: Vec<Utility>,
+    pub variants: Vec<Variant>,
 }
 
-pub fn parse_config<'a>() -> impl Parser<'a, &'a str, UserConfig, extra::Err<Rich<'a, char>>> {
-    // ignore_whitespace2()
-    //     .ignore_then(choice((utility_parser().map(ConfigUnit::Utility),)))
-    //     .then_ignore(ignore_whitespace2())
-    //     .repeated()
-    //     .collect::<Vec<_>>()
-    choice((parse_utility().map(ConfigUnit::Utility),))
-        .padded()
-        .repeated()
-        .collect::<Vec<_>>()
-        .map(|v| {
-            let mut res = UserConfig {
-                utilities: Vec::new(),
-            };
+pub fn config_parser<'a>() -> impl Parser<'a, &'a str, UserConfig, extra::Err<Rich<'a, char>>> {
+    choice((
+        parse_utility().map_with(|x, e| (ConfigUnit::Utility(x), e.span())),
+        variant_parser().map_with(|x, e| (ConfigUnit::Variant(x), e.span())),
+    ))
+    .padded()
+    .repeated()
+    .collect::<Vec<_>>()
+    .map(|v| {
+        let mut res = UserConfig {
+            utilities: Vec::new(),
+            variants: Vec::new(),
+        };
 
-            for v in v {
-                match v {
-                    ConfigUnit::Utility(u) => res.utilities.push(u),
+        for (v, span) in v {
+            match v {
+                ConfigUnit::Utility(u) => res.utilities.push(u),
+                ConfigUnit::Variant(mut v) => {
+                    v.target -= dbg!(span.start);
+                    res.variants.push(v);
                 }
             }
+        }
 
-            res
-        })
+        res
+    })
 }
 
 pub fn parse_utility<'a>() -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<'a, char>>> {
@@ -389,7 +463,7 @@ pub fn parse_utility<'a>() -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<
 mod tests {
     use chumsky::Parser;
 
-    use crate::config_css::{parse_config, parse_utility};
+    use crate::config_css::{config_parser, parse_utility, variant_parser};
 
     #[test]
     fn test_utility_parser() {
@@ -408,6 +482,20 @@ mod tests {
     }
 
     #[test]
+    fn test_variant_parser() {
+        // text-[100]
+        let util = variant_parser()
+            .parse(
+                r#"@custom-variant myvar {&:hover{&:nth-of-child(-n+3){
+                @slot; }}}"#,
+            )
+            .into_result()
+            .expect("utility error");
+        dbg!(util);
+        assert!(false);
+    }
+
+    #[test]
     fn test_parse_config() {
         // text-[100]
 
@@ -416,9 +504,12 @@ mod tests {
             @utility test2-* {
                 text-size: --value(length);
             }
+
+            @custom-variant abc {@slot;}
+            @custom-variant abc {@media(hover: hover){&:hover{ @slot;}}}
         "#;
 
-        let util = parse_config()
+        let util = config_parser()
             .parse(src)
             .into_result()
             .expect("config parse error");

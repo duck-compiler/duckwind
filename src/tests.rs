@@ -28,10 +28,20 @@ fn test_css_def() {
         @utility brightness-* {
             filter: brightness(--value([*]));
         }
+
+        @custom-variant hover {
+            @media (hover: hover) {
+                &:hover {
+                    @slot;
+                }
+            }
+        }
     "#);
 
+    dbg!(&emit_env.variants);
+
     let test_cases = vec![
-        ("[::lol]:brightness-[123]", "a"),
+        ("hover:[::lol]:brightness-[123]", "a"),
     ];
 
     for (src, expected) in test_cases {
