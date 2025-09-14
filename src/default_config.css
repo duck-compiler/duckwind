@@ -21,3 +21,7 @@
         @slot;
     }
 }
+
+@utility bg-* {
+    background-color: --value(color);
+}

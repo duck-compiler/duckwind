@@ -173,41 +173,79 @@ impl EmitEnv {
 
         css_def.body = body_to_set?;
 
-        for (v, _) in parsed.0.variants.iter() {
-            match v {
-                ParsedUnit::String(v_str) => {
-                    if v_str == "before" {
-                        css_def.pseudo_elements.push("before".to_string());
-                    } else if v_str == "after" {
-                        css_def.pseudo_elements.push("after".to_string());
-                    } else if v_str == "placeholder" {
-                        css_def.pseudo_elements.push("placeholder".to_string());
-                    } else if v_str == "file" {
-                        css_def.pseudo_elements.push("file".to_string());
-                    } else if v_str == "selection" {
-                        css_def.pseudo_elements.push("selection".to_string());
-                    } else if v_str == "first-letter" {
-                        css_def.pseudo_elements.push("first-letter".to_string());
-                    } else if v_str == "first-line" {
-                        css_def.pseudo_elements.push("first-line".to_string());
-                    } else if v_str == "backdrop" {
-                        css_def.pseudo_elements.push("backdrop".to_string());
-                    } else {
-                        if let Some(variant) = self
-                            .variants
-                            .iter()
-                            .find(|x| x.name.as_str() == v_str.as_str())
-                        {
-                            css_def.body = dbg!(variant.instantiate(&css_def.body));
+        for v in parsed.0.variants.iter() {
+            if v.len() == 1 {
+                match &v[0].0 {
+                    ParsedUnit::String(v_str) => {
+                        if v_str == "before" {
+                            css_def.pseudo_elements.push("before".to_string());
+                        } else if v_str == "after" {
+                            css_def.pseudo_elements.push("after".to_string());
+                        } else if v_str == "placeholder" {
+                            css_def.pseudo_elements.push("placeholder".to_string());
+                        } else if v_str == "file" {
+                            css_def.pseudo_elements.push("file".to_string());
+                        } else if v_str == "selection" {
+                            css_def.pseudo_elements.push("selection".to_string());
+                        } else if v_str == "first-letter" {
+                            css_def.pseudo_elements.push("first-letter".to_string());
+                        } else if v_str == "first-line" {
+                            css_def.pseudo_elements.push("first-line".to_string());
+                        } else if v_str == "backdrop" {
+                            css_def.pseudo_elements.push("backdrop".to_string());
+                        } else {
+                            if let Some(variant) = self
+                                .variants
+                                .iter()
+                                .find(|x| x.name.as_str() == v_str.as_str())
+                            {
+                                css_def.body = dbg!(variant.instantiate(&css_def.body));
+                            }
+                        }
+                    }
+                    ParsedUnit::Raw(raw_str) => {
+                        if raw_str.starts_with("::") {
+                            css_def.pseudo_elements.push(raw_str[2..].to_string());
+                        } else {
+                            css_def.body = format!("{raw_str} {{\n{}\n}}", css_def.body);
                         }
                     }
                 }
-                ParsedUnit::Raw(raw_str) => {
-                    if raw_str.starts_with("::") {
-                        css_def.pseudo_elements.push(raw_str[2..].to_string());
-                    } else {
-                        css_def.body = format!("{raw_str} {{\n{}\n}}", css_def.body);
-                    }
+            } else {
+                // is built-in
+                match &v[0].0 {
+                    ParsedUnit::String(s) => match s.as_str() {
+                        "group" => match &v[1].0 {
+                            ParsedUnit::String(param_1) => {
+                                if let Some((param, group_name)) = param_1.split_once("/") {
+                                    css_def.body = format!(
+                                        "&:is(:where(.group{}):is(:{param}) *) {{\n{}\n}}",
+                                        escape_string_for_css(&format!("/{group_name}")),
+                                        css_def.body
+                                    );
+                                } else {
+                                    css_def.body = format!(
+                                        "&:is(:where(.group):is(:{param_1}) *) {{\n{}\n}}",
+                                        css_def.body
+                                    );
+                                }
+                            }
+                            ParsedUnit::Raw(param_1) => {
+                                if param_1.contains("&") {
+                                    let replaced = param_1.replace("&", ":where(.group) *");
+                                    css_def.body =
+                                        format!("&:is({replaced}) {{\n{}\n}}", css_def.body);
+                                } else {
+                                    css_def.body = format!(
+                                        "&:is(:where(.group):is({param_1}) *) {{\n{}\n}}",
+                                        css_def.body
+                                    );
+                                }
+                            }
+                        },
+                        _ => panic!("invalid built-in variant {v:?}"),
+                    },
+                    _ => panic!("invalid built-in variant {v:?}"),
                 }
             }
         }
