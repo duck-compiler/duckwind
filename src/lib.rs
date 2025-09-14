@@ -1,4 +1,4 @@
-use chumsky::{error::Rich, extra, prelude::any, Parser};
+use chumsky::{Parser, error::Rich, extra, prelude::any};
 
 use crate::{
     lexer::lexer,
@@ -8,13 +8,13 @@ use crate::{
 #[cfg(test)]
 mod tests;
 
+mod config_css;
+mod css_literals;
 mod lexer;
 mod parser;
-mod css_data_types;
-mod config_css;
 
 pub fn ignore_whitespace<'a>() -> impl Parser<'a, &'a str, (), extra::Err<Rich<'a, char>>> {
-    any().filter(|c: &char| c.is_ascii_whitespace()).repeated()
+    any().filter(|c: &char| *c == ' ').repeated()
 }
 
 #[derive(Debug, Clone, Default)]

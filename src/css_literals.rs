@@ -116,7 +116,7 @@ pub enum Angle {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CssDataType {
+pub enum CssLiteral {
     Length(Length),
     Color(Color),
     Ratio(String, String),
@@ -349,22 +349,22 @@ pub fn absolute_size_parser<'a>()
 }
 
 pub fn data_type_parser<'a>()
--> impl Parser<'a, &'a str, CssDataType, extra::Err<Rich<'a, char>>> + Clone {
+-> impl Parser<'a, &'a str, CssLiteral, extra::Err<Rich<'a, char>>> + Clone {
     choice((
         position_parser().map(|x| {
             if x.len() == 1
                 && let Some(Position::Length(l)) = x.first()
             {
-                return CssDataType::Length(l.clone());
+                return CssLiteral::Length(l.clone());
             }
 
             if x.len() == 1
                 && let Some(Position::Percentage(p)) = x.first()
             {
-                return CssDataType::Percentage(p.clone());
+                return CssLiteral::Percentage(p.clone());
             }
 
-            CssDataType::Position(
+            CssLiteral::Position(
                 x.into_iter()
                     .map(|x| match x {
                         Position::Top => "top".to_string(),
@@ -379,16 +379,16 @@ pub fn data_type_parser<'a>()
                     .join(" "),
             )
         }),
-        ratio_parser().map(|(a, b)| CssDataType::Ratio(a, b)),
-        fr_parser().map(CssDataType::Fr),
-        color_parser().map(CssDataType::Color),
-        angle_parser().map(CssDataType::Angle),
-        length_parser().map(CssDataType::Length),
-        number_parser().map(CssDataType::Number),
-        percentage_parser().map(CssDataType::Percentage),
-        integer_parser().map(CssDataType::Integer),
-        absolute_size_parser().map(CssDataType::AbsoluteSize),
-        just("*").map(|_| CssDataType::Any),
+        ratio_parser().map(|(a, b)| CssLiteral::Ratio(a, b)),
+        fr_parser().map(CssLiteral::Fr),
+        color_parser().map(CssLiteral::Color),
+        angle_parser().map(CssLiteral::Angle),
+        length_parser().map(CssLiteral::Length),
+        number_parser().map(CssLiteral::Number),
+        percentage_parser().map(CssLiteral::Percentage),
+        integer_parser().map(CssLiteral::Integer),
+        absolute_size_parser().map(CssLiteral::AbsoluteSize),
+        just("*").map(|_| CssLiteral::Any),
     ))
 }
 
@@ -571,7 +571,7 @@ pub fn length_parser<'a>() -> impl Parser<'a, &'a str, Length, extra::Err<Rich<'
 mod tests {
     use chumsky::Parser;
 
-    use crate::css_data_types::{
+    use crate::css_literals::{
         AbsoluteSize, Angle, Color, color_parser, data_type_parser, fr_parser, length_parser,
         number_parser, ratio_parser,
     };
@@ -676,44 +676,44 @@ mod tests {
 
     #[test]
     fn test_full_parser() {
-        use super::CssDataType;
+        use super::CssLiteral;
         let test_cases = vec![
-            ("3", CssDataType::Integer("3".to_string())),
-            ("3.14", CssDataType::Number("3.14".to_string())),
-            ("23.134", CssDataType::Number("23.134".to_string())),
-            ("23.134fr", CssDataType::Fr("23.134".to_string())),
-            ("-6px", CssDataType::Length(Length::px("-6".to_string()))),
+            ("3", CssLiteral::Integer("3".to_string())),
+            ("3.14", CssLiteral::Number("3.14".to_string())),
+            ("23.134", CssLiteral::Number("23.134".to_string())),
+            ("23.134fr", CssLiteral::Fr("23.134".to_string())),
+            ("-6px", CssLiteral::Length(Length::px("-6".to_string()))),
             (
                 "120vmin",
-                CssDataType::Length(Length::vmin("120".to_string())),
+                CssLiteral::Length(Length::vmin("120".to_string())),
             ),
-            ("red", CssDataType::Color(Color::Named("red".to_string()))),
-            ("1px", CssDataType::Length(Length::px("1".to_string()))),
-            ("8rem", CssDataType::Length(Length::rem("8".to_string()))),
-            ("14rem", CssDataType::Length(Length::rem("14".to_string()))),
-            ("1/3", CssDataType::Ratio("1".to_string(), "3".to_string())),
-            ("100%", CssDataType::Percentage("100".to_string())),
-            ("xx-small", CssDataType::AbsoluteSize(AbsoluteSize::XxSmall)),
+            ("red", CssLiteral::Color(Color::Named("red".to_string()))),
+            ("1px", CssLiteral::Length(Length::px("1".to_string()))),
+            ("8rem", CssLiteral::Length(Length::rem("8".to_string()))),
+            ("14rem", CssLiteral::Length(Length::rem("14".to_string()))),
+            ("1/3", CssLiteral::Ratio("1".to_string(), "3".to_string())),
+            ("100%", CssLiteral::Percentage("100".to_string())),
+            ("xx-small", CssLiteral::AbsoluteSize(AbsoluteSize::XxSmall)),
             (
                 "34.5deg",
-                CssDataType::Angle(Angle::Deg("34.5".to_string())),
+                CssLiteral::Angle(Angle::Deg("34.5".to_string())),
             ),
-            ("center", CssDataType::Position("center".to_string())),
-            ("left", CssDataType::Position("left".to_string())),
+            ("center", CssLiteral::Position("center".to_string())),
+            ("left", CssLiteral::Position("left".to_string())),
             (
                 "center top",
-                CssDataType::Position("center top".to_string()),
+                CssLiteral::Position("center top".to_string()),
             ),
             (
                 "right 8.5%",
-                CssDataType::Position("right 8.5%".to_string()),
+                CssLiteral::Position("right 8.5%".to_string()),
             ),
             (
                 "bottom 12vmin right -6px",
-                CssDataType::Position("bottom 12vmin right -6px".to_string()),
+                CssLiteral::Position("bottom 12vmin right -6px".to_string()),
             ),
-            ("10% 20%", CssDataType::Position("10% 20%".to_string())),
-            ("8rem 14px", CssDataType::Position("8rem 14px".to_string())),
+            ("10% 20%", CssLiteral::Position("10% 20%".to_string())),
+            ("8rem 14px", CssLiteral::Position("8rem 14px".to_string())),
         ];
 
         for (src, expected) in test_cases {
