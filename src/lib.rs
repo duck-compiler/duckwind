@@ -2,8 +2,8 @@ use chumsky::{IterParser, Parser, error::Rich, extra, prelude::any};
 
 use crate::{
     config_css::{Utility, Variant, config_parser},
-    lexer::{DWS, lexer},
-    parser::{ParsedUnit, duckwind_parser, make_eoi, make_input},
+    lexer::{DWS, empty_span, lexer},
+    parser::{Parsed, ParsedUnit, duckwind_parser, make_eoi, make_input},
 };
 
 #[cfg(test)]
@@ -86,6 +86,14 @@ impl EmitEnv {
     pub fn resolve_internal_variant(&self, body: &str, v: &[(ParsedUnit, DWS)]) -> String {
         match &v[0].0 {
             ParsedUnit::String(s) => match s.as_str() {
+                "has" => match &v[1].0 {
+                    ParsedUnit::String(param) => {
+                        format!("&:has(:{param}) {{\n{body}\n}}")
+                    }
+                    ParsedUnit::Raw(raw_param) => {
+                        format!("&:has({raw_param}) {{\n{body}\n}}")
+                    }
+                },
                 "not" => {
                     let mut other = self.resolve_internal_variant(body, &v[1..]);
                     if let Some(mut start) = other.find(|c: char| !c.is_whitespace()) {
@@ -103,54 +111,82 @@ impl EmitEnv {
                 "peer" => match &v[1].0 {
                     ParsedUnit::String(param_1) => {
                         if let Some((param, peer_name)) = param_1.split_once("/") {
+                            if param == "has" || param == "not" {
+                                let mut input =
+                                    vec![(ParsedUnit::String(param.to_string()), empty_span())];
+                                input.extend_from_slice(&v[2..]);
+                                let res = self.resolve_internal_variant(body, input.as_slice());
+                                let cond = &res[1..res.rfind("{").unwrap()];
+                                return format!(
+                                    "&:is(:where(.peer{}){cond} ~ *) {{\n{body}\n}}",
+                                    escape_string_for_css(&format!("/{peer_name}")),
+                                );
+                            }
+
                             return format!(
-                                "&:is(:where(.peer{}):is(:{param}) ~ *) {{\n{}\n}}",
-                                escape_string_for_css(&format!("/{peer_name}")),
-                                body
+                                "&:is(:where(.peer{}):is(:{param}) ~ *) {{\n{body}\n}}",
+                                escape_string_for_css(&format!("/{peer_name}"))
                             );
                         } else {
+                            if param_1 == "has" || param_1 == "not" {
+                                let mut input =
+                                    vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
+                                input.extend_from_slice(&v[2..]);
+                                let res = self.resolve_internal_variant(body, input.as_slice());
+                                let cond = &res[1..res.rfind("{").unwrap()];
+                                return format!("&:is(:where(.peer){cond} ~ *) {{\n{body}\n}}",);
+                            }
                             return format!(
-                                "&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{}\n}}",
-                                body
+                                "&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{body}\n}}",
                             );
                         }
                     }
                     ParsedUnit::Raw(param_1) => {
                         if param_1.contains("&") {
                             let replaced = param_1.replace("&", ":where(.peer) ~ *");
-                            return format!("&:is({replaced}) {{\n{}\n}}", body);
+                            return format!("&:is({replaced}) {{\n{body}\n}}");
                         } else {
-                            return format!(
-                                "&:is(:where(.peer):is({param_1}) ~ *) {{\n{}\n}}",
-                                body
-                            );
+                            return format!("&:is(:where(.peer):is({param_1}) ~ *) {{\n{body}\n}}",);
                         }
                     }
                 },
                 "group" => match &v[1].0 {
                     ParsedUnit::String(param_1) => {
                         if let Some((param, group_name)) = param_1.split_once("/") {
+                            if param == "has" || param == "not" {
+                                let mut input =
+                                    vec![(ParsedUnit::String(param.to_string()), empty_span())];
+                                input.extend_from_slice(&v[2..]);
+                                let res = self.resolve_internal_variant(body, input.as_slice());
+                                let cond = &res[1..res.rfind("{").unwrap()];
+                                return format!(
+                                    "&:is(:where(.group{}){cond} *) {{\n{body}\n}}",
+                                    escape_string_for_css(&format!("/{group_name}")),
+                                );
+                            }
+
                             return format!(
-                                "&:is(:where(.group{}):is(:{param}) *) {{\n{}\n}}",
+                                "&:is(:where(.group{}):is(:{param}) *) {{\n{body}\n}}",
                                 escape_string_for_css(&format!("/{group_name}")),
-                                body
                             );
                         } else {
-                            return format!(
-                                "&:is(:where(.group):is(:{param_1}) *) {{\n{}\n}}",
-                                body
-                            );
+                            if param_1 == "has" || param_1 == "not" {
+                                let mut input =
+                                    vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
+                                input.extend_from_slice(&v[2..]);
+                                let res = self.resolve_internal_variant(body, input.as_slice());
+                                let cond = &res[1..res.rfind("{").unwrap()];
+                                return format!("&:is(:where(.group){cond} *) {{\n{body}\n}}",);
+                            }
+                            return format!("&:is(:where(.group):is(:{param_1}) *) {{\n{body}\n}}",);
                         }
                     }
                     ParsedUnit::Raw(param_1) => {
                         if param_1.contains("&") {
                             let replaced = param_1.replace("&", ":where(.group) *");
-                            return format!("&:is({replaced}) {{\n{}\n}}", body);
+                            return format!("&:is({replaced}) {{\n{body}\n}}");
                         } else {
-                            return format!(
-                                "&:is(:where(.group):is({param_1}) *) {{\n{}\n}}",
-                                body
-                            );
+                            return format!("&:is(:where(.group):is({param_1}) *) {{\n{body}\n}}");
                         }
                     }
                 },
