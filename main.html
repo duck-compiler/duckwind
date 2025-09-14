@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+    <head>
+        <style>
+            .not-group-hover\/abc\:bg-\#000000 {
+                &:not(:is(:where(.group\/abc):is(:hover) *)) {
+                    background-color: #000000;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="group/abc">
+            <h1 class="not-group-hover/abc:bg-#000000">text</h1>
+        </div>
+    </body>
+</html>

@@ -22,7 +22,7 @@ fn test_css_def() {
     let mut emit_env = EmitEnv::default();
 
     let test_cases = vec![
-        ("group-hover/abc:bg-#000000", "a"),
+        ("not-not-group-hover/abc:bg-#000000", "a"),
     ];
 
     for (src, expected) in test_cases {

@@ -2,7 +2,7 @@ use chumsky::{IterParser, Parser, error::Rich, extra, prelude::any};
 
 use crate::{
     config_css::{Utility, Variant, config_parser},
-    lexer::lexer,
+    lexer::{DWS, lexer},
     parser::{ParsedUnit, duckwind_parser, make_eoi, make_input},
 };
 
@@ -83,9 +83,82 @@ impl Default for EmitEnv {
 }
 
 impl EmitEnv {
-    // pub fn resolve_internal_variant(&self, v_str: &str) -> String {
+    pub fn resolve_internal_variant(&self, body: &str, v: &[(ParsedUnit, DWS)]) -> String {
+        match &v[0].0 {
+            ParsedUnit::String(s) => match s.as_str() {
+                "not" => {
+                    let mut other = self.resolve_internal_variant(body, &v[1..]);
+                    if let Some(mut start) = other.find(|c: char| !c.is_whitespace()) {
+                        if &other[start..start + 1] == "&" && start + 1 < other.len() {
+                            start += 1;
+                        }
 
-    // }
+                        if let Some(newline_index) = other[start..].find('\n') {
+                            other.insert(newline_index, ')');
+                            other.insert_str(start, ":not(");
+                        }
+                    }
+                    other
+                }
+                "peer" => match &v[1].0 {
+                    ParsedUnit::String(param_1) => {
+                        if let Some((param, peer_name)) = param_1.split_once("/") {
+                            return format!(
+                                "&:is(:where(.peer{}):is(:{param}) ~ *) {{\n{}\n}}",
+                                escape_string_for_css(&format!("/{peer_name}")),
+                                body
+                            );
+                        } else {
+                            return format!(
+                                "&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{}\n}}",
+                                body
+                            );
+                        }
+                    }
+                    ParsedUnit::Raw(param_1) => {
+                        if param_1.contains("&") {
+                            let replaced = param_1.replace("&", ":where(.peer) ~ *");
+                            return format!("&:is({replaced}) {{\n{}\n}}", body);
+                        } else {
+                            return format!(
+                                "&:is(:where(.peer):is({param_1}) ~ *) {{\n{}\n}}",
+                                body
+                            );
+                        }
+                    }
+                },
+                "group" => match &v[1].0 {
+                    ParsedUnit::String(param_1) => {
+                        if let Some((param, group_name)) = param_1.split_once("/") {
+                            return format!(
+                                "&:is(:where(.group{}):is(:{param}) *) {{\n{}\n}}",
+                                escape_string_for_css(&format!("/{group_name}")),
+                                body
+                            );
+                        } else {
+                            return format!(
+                                "&:is(:where(.group):is(:{param_1}) *) {{\n{}\n}}",
+                                body
+                            );
+                        }
+                    }
+                    ParsedUnit::Raw(param_1) => {
+                        if param_1.contains("&") {
+                            let replaced = param_1.replace("&", ":where(.group) *");
+                            return format!("&:is({replaced}) {{\n{}\n}}", body);
+                        } else {
+                            return format!(
+                                "&:is(:where(.group):is({param_1}) *) {{\n{}\n}}",
+                                body
+                            );
+                        }
+                    }
+                },
+                _ => panic!("invalid built-in variant {v:?}"),
+            },
+            _ => panic!("invalid built-in variant {v:?}"),
+        }
+    }
 
     pub fn new_with_default_config() -> Self {
         let mut res = EmitEnv {
@@ -213,68 +286,7 @@ impl EmitEnv {
                 }
             } else {
                 // is built-in
-                match &v[0].0 {
-                    ParsedUnit::String(s) => match s.as_str() {
-                        "peer" => match &v[1].0 {
-                            ParsedUnit::String(param_1) => {
-                                if let Some((param, peer_name)) = param_1.split_once("/") {
-                                    css_def.body = format!(
-                                        "&:is(:where(.peer{}):is(:{param}) ~ *) {{\n{}\n}}",
-                                        escape_string_for_css(&format!("/{peer_name}")),
-                                        css_def.body
-                                    );
-                                } else {
-                                    css_def.body = format!(
-                                        "&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{}\n}}",
-                                        css_def.body
-                                    );
-                                }
-                            }
-                            ParsedUnit::Raw(param_1) => {
-                                if param_1.contains("&") {
-                                    let replaced = param_1.replace("&", ":where(.peer) ~ *");
-                                    css_def.body =
-                                        format!("&:is({replaced}) {{\n{}\n}}", css_def.body);
-                                } else {
-                                    css_def.body = format!(
-                                        "&:is(:where(.peer):is({param_1}) ~ *) {{\n{}\n}}",
-                                        css_def.body
-                                    );
-                                }
-                            }
-                        }
-                        "group" => match &v[1].0 {
-                            ParsedUnit::String(param_1) => {
-                                if let Some((param, group_name)) = param_1.split_once("/") {
-                                    css_def.body = format!(
-                                        "&:is(:where(.group{}):is(:{param}) *) {{\n{}\n}}",
-                                        escape_string_for_css(&format!("/{group_name}")),
-                                        css_def.body
-                                    );
-                                } else {
-                                    css_def.body = format!(
-                                        "&:is(:where(.group):is(:{param_1}) *) {{\n{}\n}}",
-                                        css_def.body
-                                    );
-                                }
-                            }
-                            ParsedUnit::Raw(param_1) => {
-                                if param_1.contains("&") {
-                                    let replaced = param_1.replace("&", ":where(.group) *");
-                                    css_def.body =
-                                        format!("&:is({replaced}) {{\n{}\n}}", css_def.body);
-                                } else {
-                                    css_def.body = format!(
-                                        "&:is(:where(.group):is({param_1}) *) {{\n{}\n}}",
-                                        css_def.body
-                                    );
-                                }
-                            }
-                        },
-                        _ => panic!("invalid built-in variant {v:?}"),
-                    },
-                    _ => panic!("invalid built-in variant {v:?}"),
-                }
+                css_def.body = self.resolve_internal_variant(css_def.body.as_str(), v);
             }
         }
 
