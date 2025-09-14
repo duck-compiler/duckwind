@@ -66,7 +66,7 @@ pub fn parse_raw_text<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<
 
 pub fn parse_unit<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     any()
-        .filter(|c: &char| c.is_ascii_alphanumeric() || *c == '/')
+        .filter(|c: &char| c.is_ascii_alphanumeric() || *c == '/' || *c == '#')
         .repeated()
         .at_least(1)
         .collect()
