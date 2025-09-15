@@ -25,3 +25,5 @@
 @utility bg-* {
     background-color: --value(color);
 }
+
+@custom-variant starting (@starting-style);

@@ -16,6 +16,7 @@ pub struct Variant {
     pub name: String,
     pub body: String,
     pub target: usize,
+    pub is_short: bool,
 }
 
 impl Variant {
@@ -381,6 +382,7 @@ pub fn variant_parser<'a>() -> impl Parser<'a, &'a str, Variant, extra::Err<Rich
                     body: s_buf,
                     target: target.expect("need target")
                         - (a.len() + b.len() + d.len() + 1 + name_len),
+                    is_short: false,
                 }
             }),
         just("@custom-variant")
@@ -406,6 +408,7 @@ pub fn variant_parser<'a>() -> impl Parser<'a, &'a str, Variant, extra::Err<Rich
                     name,
                     body: s_buf,
                     target: len + 3,
+                    is_short: true,
                 }
             }),
     ))
@@ -447,7 +450,9 @@ pub fn config_parser<'a>() -> impl Parser<'a, &'a str, UserConfig, extra::Err<Ri
             match v {
                 ConfigUnit::Utility(u) => res.utilities.push(u),
                 ConfigUnit::Variant(mut v) => {
-                    v.target -= dbg!(span.start);
+                    if !v.is_short {
+                        v.target -= span.start;
+                    }
                     res.variants.push(v);
                 }
             }
