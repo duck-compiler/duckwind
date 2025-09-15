@@ -283,7 +283,12 @@ impl EmitEnv {
             let pre_str = pre.join("-");
 
             match last.0 {
-                ParsedUnit::String(last_str) => {
+                ParsedUnit::String(mut last_str) => {
+                    let mut after = None::<String>;
+                    if let Some((pre, opacity)) = last_str.split_once("/") {
+                        after = Some(opacity.to_string());
+                        last_str = pre.to_string();
+                    }
                     pre.push(last_str.clone());
                     let full = pre.join("-");
 
@@ -302,6 +307,12 @@ impl EmitEnv {
                                 body_to_set = Some(res);
                             }
                         }
+                    }
+
+                    if let Some(after) = after
+                        && let Some(res) = body_to_set.as_mut()
+                    {
+                        res.push_str(&format!("\nopacity: {after}%;"));
                     }
                 }
                 ParsedUnit::Raw(raw_value) => {
