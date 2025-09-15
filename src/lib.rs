@@ -85,8 +85,8 @@ impl Default for EmitEnv {
 }
 
 impl EmitEnv {
-    pub fn resolve_internal_variant(&self, body: &str, v: &[(ParsedUnit, DWS)]) -> String {
-        match &v[0].0 {
+    pub fn resolve_internal_variant(&self, body: &str, v: &[(ParsedUnit, DWS)]) -> Option<String> {
+        Some(match &v[0].0 {
             ParsedUnit::String(s) => match s.as_str() {
                 "has" => match &v[1].0 {
                     ParsedUnit::String(param) => {
@@ -96,8 +96,25 @@ impl EmitEnv {
                         format!("&:has({raw_param}) {{\n{body}\n}}")
                     }
                 },
+                "aria" => match &v[1].0 {
+                    ParsedUnit::String(next) => match next.as_str() {
+                        "busy" => r#"&[aria-busy="true"]"#.to_string(),
+                        "checked" => r#"&[aria-checked="true"]"#.to_string(),
+                        "disabled" => r#"&[aria-disabled="true"]"#.to_string(),
+                        "expanded" => r#"&[aria-expanded="true"]"#.to_string(),
+                        "hidden" => r#"&[aria-hidden="true"]"#.to_string(),
+                        "pressed" => r#"&[aria-pressed="true"]"#.to_string(),
+                        "readonly" => r#"&[aria-readonly="true"]"#.to_string(),
+                        "required" => r#"&[aria-required="true"]"#.to_string(),
+                        "selected" => r#"&[aria-selected="true"]"#.to_string(),
+                        _ => return None,
+                    },
+                    ParsedUnit::Raw(raw_next) => {
+                        format!("&[aria-{raw_next}]")
+                    }
+                },
                 "not" => {
-                    let mut other = self.resolve_internal_variant(body, &v[1..]);
+                    let mut other = self.resolve_internal_variant(body, &v[1..])?;
                     if let Some(mut start) = other.find(|c: char| !c.is_whitespace()) {
                         if &other[start..start + 1] == "&" && start + 1 < other.len() {
                             start += 1;
@@ -117,38 +134,37 @@ impl EmitEnv {
                                 let mut input =
                                     vec![(ParsedUnit::String(param.to_string()), empty_span())];
                                 input.extend_from_slice(&v[2..]);
-                                let res = self.resolve_internal_variant(body, input.as_slice());
+                                let res = self.resolve_internal_variant(body, input.as_slice())?;
                                 let cond = &res[1..res.rfind("{").unwrap()];
-                                return format!(
+                                format!(
                                     "&:is(:where(.peer{}){cond} ~ *) {{\n{body}\n}}",
                                     escape_string_for_css(&format!("/{peer_name}")),
-                                );
+                                )
+                            } else {
+                                format!(
+                                    "&:is(:where(.peer{}):is(:{param}) ~ *) {{\n{body}\n}}",
+                                    escape_string_for_css(&format!("/{peer_name}"))
+                                )
                             }
-
-                            return format!(
-                                "&:is(:where(.peer{}):is(:{param}) ~ *) {{\n{body}\n}}",
-                                escape_string_for_css(&format!("/{peer_name}"))
-                            );
                         } else {
                             if param_1 == "has" || param_1 == "not" {
                                 let mut input =
                                     vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
                                 input.extend_from_slice(&v[2..]);
-                                let res = self.resolve_internal_variant(body, input.as_slice());
+                                let res = self.resolve_internal_variant(body, input.as_slice())?;
                                 let cond = &res[1..res.rfind("{").unwrap()];
-                                return format!("&:is(:where(.peer){cond} ~ *) {{\n{body}\n}}",);
+                                format!("&:is(:where(.peer){cond} ~ *) {{\n{body}\n}}",)
+                            } else {
+                                format!("&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{body}\n}}",)
                             }
-                            return format!(
-                                "&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{body}\n}}",
-                            );
                         }
                     }
                     ParsedUnit::Raw(param_1) => {
                         if param_1.contains("&") {
                             let replaced = param_1.replace("&", ":where(.peer) ~ *");
-                            return format!("&:is({replaced}) {{\n{body}\n}}");
+                            format!("&:is({replaced}) {{\n{body}\n}}")
                         } else {
-                            return format!("&:is(:where(.peer):is({param_1}) ~ *) {{\n{body}\n}}",);
+                            format!("&:is(:where(.peer):is({param_1}) ~ *) {{\n{body}\n}}",)
                         }
                     }
                 },
@@ -158,14 +174,15 @@ impl EmitEnv {
                             let mut input =
                                 vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
                             input.extend_from_slice(&v[2..]);
-                            let res = self.resolve_internal_variant(body, input.as_slice());
+                            let res = self.resolve_internal_variant(body, input.as_slice())?;
                             let cond = &res[1..res.rfind("{").unwrap()];
-                            return format!("&:is(:where({cond}) *) {{\n{body}\n}}",);
+                            format!("&:is(:where({cond}) *) {{\n{body}\n}}",)
+                        } else {
+                            format!("&:is(:where(:{param_1}) *) {{\n{body}\n}}",)
                         }
-                        return format!("&:is(:where(:{param_1}) *) {{\n{body}\n}}",);
                     }
                     ParsedUnit::Raw(param_1) => {
-                        return format!("&:is(:where({param_1}) *) {{\n{body}\n}}");
+                        format!("&:is(:where({param_1}) *) {{\n{body}\n}}")
                     }
                 },
                 "group" => match &v[1].0 {
@@ -175,43 +192,44 @@ impl EmitEnv {
                                 let mut input =
                                     vec![(ParsedUnit::String(param.to_string()), empty_span())];
                                 input.extend_from_slice(&v[2..]);
-                                let res = self.resolve_internal_variant(body, input.as_slice());
+                                let res = self.resolve_internal_variant(body, input.as_slice())?;
                                 let cond = &res[1..res.rfind("{").unwrap()];
-                                return format!(
+                                format!(
                                     "&:is(:where(.group{}){cond} *) {{\n{body}\n}}",
                                     escape_string_for_css(&format!("/{group_name}")),
-                                );
+                                )
+                            } else {
+                                format!(
+                                    "&:is(:where(.group{}):is(:{param}) *) {{\n{body}\n}}",
+                                    escape_string_for_css(&format!("/{group_name}")),
+                                )
                             }
-
-                            return format!(
-                                "&:is(:where(.group{}):is(:{param}) *) {{\n{body}\n}}",
-                                escape_string_for_css(&format!("/{group_name}")),
-                            );
                         } else {
                             if param_1 == "has" || param_1 == "not" {
                                 let mut input =
                                     vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
                                 input.extend_from_slice(&v[2..]);
-                                let res = self.resolve_internal_variant(body, input.as_slice());
+                                let res = self.resolve_internal_variant(body, input.as_slice())?;
                                 let cond = &res[1..res.rfind("{").unwrap()];
-                                return format!("&:is(:where(.group){cond} *) {{\n{body}\n}}",);
+                                format!("&:is(:where(.group){cond} *) {{\n{body}\n}}",)
+                            } else {
+                                format!("&:is(:where(.group):is(:{param_1}) *) {{\n{body}\n}}",)
                             }
-                            return format!("&:is(:where(.group):is(:{param_1}) *) {{\n{body}\n}}",);
                         }
                     }
                     ParsedUnit::Raw(param_1) => {
                         if param_1.contains("&") {
                             let replaced = param_1.replace("&", ":where(.group) *");
-                            return format!("&:is({replaced}) {{\n{body}\n}}");
+                            format!("&:is({replaced}) {{\n{body}\n}}")
                         } else {
-                            return format!("&:is(:where(.group):is({param_1}) *) {{\n{body}\n}}");
+                            format!("&:is(:where(.group):is({param_1}) *) {{\n{body}\n}}")
                         }
                     }
                 },
-                _ => panic!("invalid built-in variant {v:?}"),
+                _ => return None,
             },
-            _ => panic!("invalid built-in variant {v:?}"),
-        }
+            _ => return None,
+        })
     }
 
     pub fn new_with_default_config() -> Self {
@@ -356,8 +374,7 @@ impl EmitEnv {
                                     })
                                     .collect::<Vec<_>>()
                                     .join("-");
-                                css_def.body =
-                                    format!("&[data-{joined}] {{\n{}\n}}", css_def.body);
+                                css_def.body = format!("&[data-{joined}] {{\n{}\n}}", css_def.body);
                             }
                         }
                         "supports" => {
@@ -404,7 +421,7 @@ impl EmitEnv {
                     _ => {}
                 }
                 // is built-in
-                css_def.body = self.resolve_internal_variant(css_def.body.as_str(), v);
+                css_def.body = self.resolve_internal_variant(css_def.body.as_str(), v)?;
             }
         }
 
