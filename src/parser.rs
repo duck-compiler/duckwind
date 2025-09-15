@@ -56,14 +56,26 @@ where
     I: BorrowInput<'a, Token = Token, Span = DWS>,
     M: Fn(DWS, &'a [Spanned<Token>]) -> I + Clone + 'static,
 {
-    (choice((
+    (just(Token::Ctrl('-')).or_not().then(choice((
         select_ref! { Token::Unit(i) => i.to_string() }.map(ParsedUnit::String),
         select_ref! { Token::Raw(i) => i.to_string() }.map(ParsedUnit::Raw),
-    ))
-    .map_with(|x, e| (x, e.span()))
+    ))))
+    .map_with(|x, e| {
+        (
+            match &x.1 {
+                ParsedUnit::String(s) => {
+                    ParsedUnit::String(format!("{}{s}", x.0.map(|_| "-").unwrap_or_default()))
+                }
+                ParsedUnit::Raw(s) => {
+                    ParsedUnit::Raw(format!("{}{s}", x.0.map(|_| "-").unwrap_or_default()))
+                }
+            },
+            e.span(),
+        )
+    })
     .separated_by(just(Token::Ctrl('-')))
     .at_least(1)
-    .collect::<Vec<_>>())
+    .collect::<Vec<_>>()
     .separated_by(just(Token::Ctrl(':')))
     .at_least(1)
     .collect::<Vec<_>>()

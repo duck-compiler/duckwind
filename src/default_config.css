@@ -421,3 +421,7 @@
 @utility sticky {
     position: sticky;
 }
+
+@utility -abc {
+    color: red;
+}
