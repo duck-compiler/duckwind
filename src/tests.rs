@@ -23,6 +23,7 @@ fn test_css_def() {
     dbg!(&emit_env.variants);
 
     let test_cases = vec![
+        ("md:not-sr-only", "a"),
         ("@3xl:peer-not-has-focus-within:bg-red", "a"),
         ("abb-bbb:bg-red", "a"),
         ("starting:bg-red/75", "a"),

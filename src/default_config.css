@@ -1,37 +1,423 @@
-@custom-variant hover {
-    &:hover {
-        @slot;
-    }
-}
+@custom-variant 3xs (@media (width >= 16rem));
+@custom-variant 2xs (@media (width >= 18rem));
+@custom-variant xs (@media (width >= 20rem));
+@custom-variant sm (@media (width >= 24rem));
+@custom-variant md (@media (width >= 28rem));
+@custom-variant lg (@media (width >= 32rem));
+@custom-variant xl (@media (width >= 36rem));
+@custom-variant 2xl (@media (width >= 42rem));
+@custom-variant 3xl (@media (width >= 48rem));
+@custom-variant 4xl (@media (width >= 56rem));
+@custom-variant 5xl (@media (width >= 64rem));
+@custom-variant 6xl (@media (width >= 72rem));
+@custom-variant 7xl (@media (width >= 80rem));
 
-@custom-variant focus {
-    &:focus {
-        @slot;
-    }
-}
-
-@custom-variant first-child {
-    &:first-child {
-        @slot;
-    }
-}
-
-@custom-variant required {
-    &:required {
-        @slot;
-    }
-}
-
+@custom-variant @3xs (@container (width >= 16rem));
+@custom-variant @2xs (@container (width >= 18rem));
+@custom-variant @xs (@container (width >= 20rem));
+@custom-variant @sm (@container (width >= 24rem));
+@custom-variant @md (@container (width >= 28rem));
+@custom-variant @lg (@container (width >= 32rem));
+@custom-variant @xl (@container (width >= 36rem));
+@custom-variant @2xl (@container (width >= 42rem));
 @custom-variant @3xl (@container (width >= 48rem));
-
-@custom-variant abb-bbb {
-    &:hover {
-        @slot;
-    }
-}
-
-@utility bg-* {
-    background-color: --value(color);
-}
+@custom-variant @4xl (@container (width >= 56rem));
+@custom-variant @5xl (@container (width >= 64rem));
+@custom-variant @6xl (@container (width >= 72rem));
+@custom-variant @7xl (@container (width >= 80rem));
 
 @custom-variant starting (@starting-style);
+
+@utility aspect-square {
+    aspect-ratio: 1 / 1;
+}
+@utility aspect-video {
+    aspect-ratio: 16 / 9;
+}
+@utility aspect-auto {
+    aspect-ratio: auto;
+}
+@utility aspect-* {
+    aspect-ratio: --value(ratio, [*]);
+}
+
+@utility columns-* {
+    columns: --value(number);
+}
+@utility columns-3xs {
+    columns: 16rem;
+}
+@utility columns-2xs {
+    columns: 18rem;
+}
+@utility columns-xs {
+    columns: 20rem;
+}
+@utility columns-sm {
+    columns: 24rem;
+}
+@utility columns-md {
+    columns: 28rem;
+}
+@utility columns-lg {
+    columns: 32rem;
+}
+@utility columns-xl {
+    columns: 36rem;
+}
+@utility columns-2xl {
+    columns: 42rem;
+}
+@utility columns-3xl {
+    columns: 48rem;
+}
+@utility columns-4xl {
+    columns: 56rem;
+}
+@utility columns-5xl {
+    columns: 64rem;
+}
+@utility columns-6xl {
+    columns: 72rem;
+}
+@utility columns-7xl {
+    columns: 80rem;
+}
+@utility columns-auto {
+    columns: auto;
+}
+
+@utility break-after-auto {
+    break-after: auto;
+}
+@utility break-after-avoid {
+    break-after: avoid;
+}
+@utility break-after-all {
+    break-after: all;
+}
+@utility break-after-avoid-page {
+    break-after: avoid-page;
+}
+@utility break-after-page {
+    break-after: page;
+}
+@utility break-after-left {
+    break-after: left;
+}
+@utility break-after-right {
+    break-after: right;
+}
+@utility break-after-column {
+    break-after: column;
+}
+
+@utility break-before-auto {
+    break-before: auto;
+}
+@utility break-before-avoid {
+    break-before: avoid;
+}
+@utility break-before-all {
+    break-before: all;
+}
+@utility break-before-avoid-page {
+    break-before: avoid-page;
+}
+@utility break-before-page {
+    break-before: page;
+}
+@utility break-before-left {
+    break-before: left;
+}
+@utility break-before-right {
+    break-before: right;
+}
+@utility break-before-column {
+    break-before: column;
+}
+
+@utility break-inside-auto {
+    break-inside: auto;
+}
+@utility break-inside-avoid {
+    break-inside: avoid;
+}
+@utility break-inside-avoid-page {
+    break-inside: avoid-page;
+}
+@utility break-inside-avoid-column {
+    break-inside: avoid-column;
+}
+
+@utility box-decoration-clone {
+    box-decoration-break: clone;
+}
+@utility box-decoration-slice {
+    box-decoration-break: slice;
+}
+
+@utility box-border {
+    box-sizing: border-box;
+}
+@utility box-content {
+    box-sizing: content-box;
+}
+
+@utility inline {
+    display: inline;
+}
+@utility block {
+    display: block;
+}
+@utility inline-block {
+    display: inline-block;
+}
+@utility flow-root {
+    display: flow-root;
+}
+@utility flex {
+    display: flex;
+}
+@utility inline-flex {
+    display: inline-flex;
+}
+@utility grid {
+    display: grid;
+}
+@utility inline-grid {
+    display: inline-grid;
+}
+@utility contents {
+    display: contents;
+}
+@utility table {
+    display: table;
+}
+@utility inline-table {
+    display: inline-table;
+}
+@utility table-caption {
+    display: table-caption;
+}
+@utility table-cell {
+    display: table-cell;
+}
+@utility table-column {
+    display: table-column;
+}
+@utility table-column-group {
+    display: table-column-group;
+}
+@utility table-footer-group {
+    display: table-footer-group;
+}
+@utility table-header-group {
+    display: table-header-group;
+}
+@utility table-row-group {
+    display: table-row-group;
+}
+@utility table-row {
+    display: table-row;
+}
+@utility list-item {
+    display: list-item;
+}
+@utility hidden {
+    display: none;
+}
+@utility sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+@utility not-sr-only {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+}
+
+@utility float-right {
+    float: right;
+}
+@utility float-left {
+    float: left;
+}
+@utility float-start {
+    float: inline-start;
+}
+@utility float-end {
+    float: inline-start;
+}
+@utility float-none {
+    float: none;
+}
+
+@utility clear-left {
+    clear: left;
+}
+@utility clear-right {
+    clear: right;
+}
+@utility clear-both {
+    clear: both;
+}
+@utility clear-start {
+    clear: inline-start;
+}
+@utility clear-end {
+    clear: inline-end;
+}
+@utility clear-none {
+    clear: none;
+}
+
+@utility isolate {
+    isolation: isolate;
+}
+@utility isolation-auto {
+    isolation: auto;
+}
+
+@utility object-contain {
+    object-fit: contain;
+}
+@utility object-cover {
+    object-fit: cover;
+}
+@utility object-fill {
+    object-fit: fill;
+}
+@utility object-none {
+    object-fit: none;
+}
+@utility object-scale-down {
+    object-fit: scale-down;
+}
+
+@utility object-top-left {
+    object-position: top left;
+}
+@utility object-top {
+    object-position: top;
+}
+@utility object-top-right {
+    object-position: top right;
+}
+@utility object-left {
+    object-position: left;
+}
+@utility object-center {
+    object-position: center;
+}
+@utility object-right {
+    object-position: right;
+}
+@utility object-bottom-left {
+    object-position: bottom left;
+}
+@utility object-bottom {
+    object-position: bottom;
+}
+@utility object-bottom-right {
+    object-position: bottom right;
+}
+@utility object-* {
+    object-position: --value(position);
+}
+
+@utility overflow-auto {
+    overflow: auto;
+}
+@utility overflow-hidden {
+    overflow: hidden;
+}
+@utility overflow-clip {
+    overflow: clip;
+}
+@utility overflow-visible {
+    overflow: visible;
+}
+@utility overflow-scroll {
+    overflow: scroll;
+}
+@utility overflow-x-auto {
+    overflow-x: auto;
+}
+@utility overflow-y-auto {
+    overflow-y: auto;
+}
+@utility overflow-x-clip {
+    overflow-x: clip;
+}
+@utility overflow-y-clip {
+    overflow-y: clip;
+}
+@utility overflow-x-visible {
+    overflow-x: visible;
+}
+@utility overflow-y-visible {
+    overflow-y: visible;
+}
+@utility overflow-x-scroll {
+    overflow-x: scroll;
+}
+@utility overflow-y-scroll {
+    overflow-y: scroll;
+}
+
+@utility overscroll-auto {
+    overscroll-behavior: auto;
+}
+@utility overscroll-contain {
+    overscroll-behavior: contain;
+}
+@utility overscroll-none {
+    overscroll-behavior: none;
+}
+@utility overscroll-x-auto {
+    overscroll-behavior-x: auto;
+}
+@utility overscroll-x-contain {
+    overscroll-behavior-x: contain;
+}
+@utility overscroll-x-none {
+    overscroll-behavior-x: none;
+}
+@utility overscroll-y-auto {
+    overscroll-behavior-y: auto;
+}
+@utility overscroll-y-contain {
+    overscroll-behavior-y: contain;
+}
+@utility overscroll-y-none {
+    overscroll-behavior-y: none;
+}
+
+@utility static {
+    position: static;
+}
+@utility fixed {
+    position: fixed;
+}
+@utility absolute {
+    position: absolute;
+}
+@utility relative {
+    position: relative;
+}
+@utility sticky {
+    position: sticky;
+}
