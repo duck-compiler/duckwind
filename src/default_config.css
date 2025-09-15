@@ -638,3 +638,483 @@
 @utility bottom-auto {
     bottom: auto;
 }
+
+@utility visible {
+    visibility: visible;
+}
+@utility invisible {
+    visibility: hidden;
+}
+@utility collapse {
+    visibility: collapse;
+}
+
+@utility z-* {
+    z-index: --value(number, "auto", [*]);
+}
+
+@utility basis-* {
+    flex-basis: calc(var(--spacing) * --value(number));
+    flex-basis: calc(--value(fraction) * 100%);
+}
+@utility basis-full {
+    flex-basis: 100%;
+}
+@utility basis-auto {
+    flex-basis: auto;
+}
+@utility basis-3xs {
+    flex-basis: 16rem;
+}
+@utility basis-2xs {
+    flex-basis: 18rem;
+}
+@utility basis-xs {
+    flex-basis: 20rem;
+}
+@utility basis-sm {
+    flex-basis: 24rem;
+}
+@utility basis-md {
+    flex-basis: 28rem;
+}
+@utility basis-lg {
+    flex-basis: 32rem;
+}
+@utility basis-xl {
+    flex-basis: 36rem;
+}
+@utility basis-2xl {
+    flex-basis: 42rem;
+}
+@utility basis-3xl {
+    flex-basis: 48rem;
+}
+@utility basis-4xl {
+    flex-basis: 56rem;
+}
+@utility basis-5xl {
+    flex-basis: 64rem;
+}
+@utility basis-6xl {
+    flex-basis: 72rem;
+}
+@utility basis-7xl {
+    flex-basis: 80rem;
+}
+
+@utility flex-row {
+    flex-direction: row;
+}
+@utility flex-row-reverse {
+    flex-direction: row-reverse;
+}
+@utility flex-col {
+    flex-direction: column;
+}
+@utility flex-col-reverse {
+    flex-direction: column-reverse;
+}
+
+@utility flex-nowrap {
+    flex-wrap: nowrap;
+}
+@utility flex-wrap {
+    flex-wrap: wrap;
+}
+@utility flex-wrap-reverse {
+    flex-wrap: wrap-reverse;
+}
+
+@utility flex-* {
+    flex: --value(number, "auto", "none", [*]);
+    flex: calc(--value(fraction) * 100%);
+}
+@utility flex-initial {
+    flex-initial: 0 auto;
+}
+
+@utility grow {
+    flex-grow: 1;
+}
+@utility grow-* {
+    flex-grow: --value(number);
+}
+
+@utility shrink {
+    flex-shrink: 1;
+}
+@utility shrink-* {
+    flex-shrink: --value(number);
+}
+
+@utility order-* {
+    order: --value(number);
+}
+@utility -order-* {
+    order: calc(--value(number) * -1);
+}
+@utility order-first {
+    order: -9999;
+}
+@utility order-last {
+    order: 9999;
+}
+@utility order-none {
+    order: 0;
+}
+
+@utility grid-cols-* {
+    grid-template-columns: repeat(--value(number), minmax(0, 1fr));
+    grid-template-columns: --value("none", "subgrid", [*]);
+}
+
+@utility col-span-* {
+    grid-column: span --value(number, [*]) / span --value(number, [*]);
+}
+@utility col-span-full {
+    grid-column: 1 / -1;
+}
+@utility col-start-* {
+    grid-column-start: --value(number, "auto", [*]);
+}
+@utility -col-start-* {
+    grid-column-start: calc(--value(number) * -1);
+}
+@utility col-end-* {
+    grid-column-end: --value(number, "auto", [*]);
+}
+@utility -col-end-* {
+    grid-column-end: calc(--value(number) * -1);
+}
+@utility col-* {
+    grid-column: --value(number, "auto", [*]);
+}
+@utility -col* {
+    grid-column: calc(--value(number) * -1);
+}
+
+@utility grid-rows-* {
+    grid-template-rows: repeat(--value(number), minmax(0, 1fr));
+    grid-template-rows: --value("none", "subgrid", [*]);
+}
+
+@utility row-span-* {
+    grid-row: span --value(number, [*]) / --value(number, [*]);
+}
+@utility row-span-full {
+    grid-row: 1 / -1;
+}
+@utility row-start-* {
+    grid-row-start: --value(number, "auto", [*]);
+}
+@utility -row-start-* {
+    grid-row-start: calc(--value(number) * -1);
+}
+@utility row-end-* {
+    grid-row-end: --value(number, "auto", [*]);
+}
+@utility -row-end-* {
+    grid-row-end: calc(--value(number) * -1);
+}
+@utility row-* {
+    grid-row: --value(number, "auto", [*]);
+}
+@utility -row-* {
+    grid-row: calc(--value(number) * -1);
+}
+
+@utility grid-flow-row {
+    grid-auto-flow: row;
+}
+@utility grid-flow-col {
+    grid-auto-flow: column;
+}
+@utility grid-flow-dense {
+    grid-auto-flow: dense;
+}
+@utility grid-flow-row-dense {
+    grid-auto-flow: row dense;
+}
+@utility grid-flow-col-dense {
+    grid-auto-flow: column dense;
+}
+
+@utility auto-cols-auto {
+    grid-auto-columns: auto;
+}
+@utility auto-cols-min {
+    grid-auto-columns: min-content;
+}
+@utility auto-cols-max {
+    grid-auto-columns: max-content;
+}
+@utility auto-cols-fr {
+    grid-auto-columns: minmax(0, 1fr);
+}
+@utility auto-cols-* {
+    grid-auto-columns: --value([*]);
+}
+
+@utility auto-rows-auto {
+    grid-auto-rows: auto;
+}
+@utility auto-rows-min {
+    grid-auto-rows: min-content;
+}
+@utility auto-rows-max {
+    grid-auto-rows: max-content;
+}
+@utility auto-rows-fr {
+    grid-auto-rows: minmax(0, 1fr);
+}
+@utility auto-rows-* {
+    grid-auto-rows: --value([*]);
+}
+
+@utility gap-* {
+    gap: calc(var(--spacing) * --value(number));
+    gap: --value([*]);
+}
+@utility gap-x-* {
+    column-gap: calc(var(--spacing) * --value(number));
+    column-gap: --value([*]);
+}
+@utility gap-y-* {
+    row-gap: calc(var(--spacing) * --value(number));
+    row-gap: --value([*]);
+}
+
+@utility justify-start {
+    justify-content: flex-start;
+}
+@utility justify-end {
+    justify-content: flex-end;
+}
+@utility justify-end-safe {
+    justify-content: safe flex-end;
+}
+@utility justify-center {
+    justify-content: center;
+}
+@utility justify-center-safe {
+    justify-content: safe center;
+}
+@utility justify-between {
+    justify-content: space-between;
+}
+@utility justify-around {
+    justify-content: space-around;
+}
+@utility justify-evenly {
+    justify-content: space-evenly;
+}
+@utility justify-stretch {
+    justify-content: stretch;
+}
+@utility justify-baseline {
+    justify-content: baseline;
+}
+@utility justify-normal {
+    justify-content: normal;
+}
+
+@utility justify-items-start {
+    justify-items: start;
+}
+@utility justify-items-end {
+    justify-items: end;
+}
+@utility justify-items-end-safe {
+    justify-items: safe end;
+}
+@utility justify-items-center {
+    justify-items: center;
+}
+@utility justify-items-center-safe {
+    justify-items: safe center;
+}
+@utility justify-items-stretch {
+    justify-items: stretch;
+}
+@utility justify-items-normal {
+    justify-items: normal;
+}
+
+@utility justify-self-auto {
+    justify-self: auto;
+}
+@utility justify-self-start {
+    justify-self: start;
+}
+@utility justify-self-center {
+    justify-self: center;
+}
+@utility justify-self-center-safe {
+    justify-self: safe center;
+}
+@utility justify-self-end {
+    justify-self: end;
+}
+@utility justify-self-end-safe {
+    justify-self: safe end;
+}
+@utility justify-self-stretch {
+    justify-self: stretch;
+}
+
+@utility content-normal {
+    align-content: normal;
+}
+@utility content-center {
+    align-content: center;
+}
+@utility content-start {
+    align-content: flex-start;
+}
+@utility content-end {
+    align-content: flex-end;
+}
+@utility conetent-between {
+    align-content: space-between;
+}
+@utility conetent-around {
+    align-content: space-around;
+}
+@utility conetent-evenly {
+    align-content: space-evenly;
+}
+@utility conetent-baseline {
+    align-content: baseline;
+}
+@utility conetent-stretch {
+    align-content: stretch;
+}
+
+@utility items-start {
+    align-items: flex-start;
+}
+@utility items-end {
+    align-items: flex-end;
+}
+@utility items-end-safe {
+    align-items: safe flex-end;
+}
+@utility items-center {
+    align-items: center;
+}
+@utility items-center-safe {
+    align-items: safe center;
+}
+@utility items-baseline {
+    align-items: baseline;
+}
+@utility items-baseline-last {
+    align-items: last baseline;
+}
+@utility items-stretch {
+    align-items: stretch;
+}
+
+@utility self-auto {
+    align-self: auto;
+}
+@utility self-start {
+    align-self: flex-start;
+}
+@utility self-end {
+    align-self: flex-end;
+}
+@utility self-end-safe {
+    align-self: safe flex-end;
+}
+@utility self-center {
+    align-self: center;
+}
+@utility self-center-safe {
+    align-self: safe center;
+}
+@utility self-stretch {
+    align-self: stretch;
+}
+@utility self-baseline {
+    align-self: baseline;
+}
+@utility self-baseline-last {
+    align-self: last baseline;
+}
+
+@utility place-content-center {
+    place-content: center;
+}
+@utility place-content-center-safe {
+    place-content: safe center;
+}
+@utility place-content-start {
+    place-content: start;
+}
+@utility place-content-end {
+    place-content: end;
+}
+@utility place-content-end-safe {
+    place-content: safe end;
+}
+@utility place-content-between {
+    place-content: space-between;
+}
+@utility place-content-around {
+    place-content: space-around;
+}
+@utility place-content-evenly {
+    place-content: space-evenly;
+}
+@utility place-content-baseline {
+    place-content: baseline;
+}
+@utility place-content-stretch {
+    place-content: stretch;
+}
+
+@utility place-items-start {
+    place-items: start;
+}
+@utility place-items-end {
+    place-items: end;
+}
+@utility place-items-end-safe {
+    place-items: safe end;
+}
+@utility place-items-center {
+    place-items: center;
+}
+@utility place-items-center-safe {
+    place-items: safe center;
+}
+@utility place-items-baseline {
+    place-items: baseline;
+}
+@utility place-items-stretch {
+    place-items: stretch;
+}
+
+@utility place-self-auto {
+    place-self: auto;
+}
+@utility place-self-start {
+    place-self: start;
+}
+@utility place-self-end {
+    place-self: end;
+}
+@utility place-self-end-safe {
+    place-self: safe end;
+}
+@utility place-self-center {
+    place-self: center;
+}
+@utility place-self-center-safe {
+    place-self: safe center;
+}
+@utility place-self-stretch {
+    place-self: stretch;
+}
