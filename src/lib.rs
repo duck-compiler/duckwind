@@ -14,7 +14,10 @@ mod css_literals;
 mod lexer;
 mod parser;
 
-const DEFAULT_CONFIG: &str = include_str!("default_config.css");
+const DEFAULT_CONFIG: &str = include_str!("css/default_config.css");
+const TEXT_COLOR_CONFIG: &str = include_str!("css/text_color.css");
+const TEXT_DECORATION_COLOR_CONFIG: &str = include_str!("css/text_decoration_color.css");
+const BG_COLOR_CONFIG: &str = include_str!("css/bg_color.css");
 
 pub fn ignore_whitespace<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     any().filter(|c: &char| *c == ' ').repeated().collect()
@@ -307,6 +310,9 @@ impl EmitEnv {
             variants: Vec::new(),
         };
         res.load_config(DEFAULT_CONFIG);
+        res.load_config(TEXT_COLOR_CONFIG);
+        res.load_config(TEXT_DECORATION_COLOR_CONFIG);
+        res.load_config(BG_COLOR_CONFIG);
         res
     }
 

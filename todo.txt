@@ -2,6 +2,7 @@
     - 3xl vars
     - spacing var
     - font vars
+    - radius vars
 - * and **
 - https://tailwindcss.com/docs/line-height text-<size/<number>
 - tests
