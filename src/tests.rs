@@ -22,6 +22,7 @@ fn test_css_def() {
     let mut emit_env = EmitEnv::default();
 
     let test_cases = vec![
+        ("in-[lol]:bg-red", "a"),
         ("group-has/abc-checked:bg-red", "a"),
         ("not-not-group-hover/abc:bg-#000000", "a"),
     ];

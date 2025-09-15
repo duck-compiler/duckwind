@@ -3,7 +3,7 @@ use chumsky::{IterParser, Parser, error::Rich, extra, prelude::any};
 use crate::{
     config_css::{Utility, Variant, config_parser},
     lexer::{DWS, empty_span, lexer},
-    parser::{Parsed, ParsedUnit, duckwind_parser, make_eoi, make_input},
+    parser::{ParsedUnit, duckwind_parser, make_eoi, make_input},
 };
 
 #[cfg(test)]
@@ -148,6 +148,22 @@ impl EmitEnv {
                         } else {
                             return format!("&:is(:where(.peer):is({param_1}) ~ *) {{\n{body}\n}}",);
                         }
+                    }
+                },
+                "in" => match &v[1].0 {
+                    ParsedUnit::String(param_1) => {
+                        if param_1 == "has" || param_1 == "not" {
+                            let mut input =
+                                vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
+                            input.extend_from_slice(&v[2..]);
+                            let res = self.resolve_internal_variant(body, input.as_slice());
+                            let cond = &res[1..res.rfind("{").unwrap()];
+                            return format!("&:is(:where({cond}) *) {{\n{body}\n}}",);
+                        }
+                        return format!("&:is(:where(:{param_1}) *) {{\n{body}\n}}",);
+                    }
+                    ParsedUnit::Raw(param_1) => {
+                        return format!("&:is(:where({param_1}) *) {{\n{body}\n}}");
                     }
                 },
                 "group" => match &v[1].0 {
