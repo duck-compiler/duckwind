@@ -191,7 +191,7 @@ impl EmitEnv {
                                     vec![(ParsedUnit::String(param.to_string()), empty_span())];
                                 input.extend_from_slice(&v[2..]);
                                 let res = self.resolve_internal_variant(body, input.as_slice())?;
-                                let cond = &res[1..res.rfind("{").unwrap()];
+                                let cond = &res[1..res.find("{").unwrap()];
                                 format!(
                                     "&:is(:where(.peer{}){cond} ~ *) {{\n{body}\n}}",
                                     escape_string_for_css(&format!("/{peer_name}")),
@@ -207,7 +207,7 @@ impl EmitEnv {
                                 vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
                             input.extend_from_slice(&v[2..]);
                             let res = self.resolve_internal_variant(body, input.as_slice())?;
-                            let cond = &res[1..res.rfind("{").unwrap()];
+                            let cond = &res[1..res.find("{").unwrap()];
                             format!("&:is(:where(.peer){cond} ~ *) {{\n{body}\n}}",)
                         } else {
                             format!("&:is(:where(.peer):is(:{joined}) ~ *) {{\n{body}\n}}",)
@@ -229,7 +229,7 @@ impl EmitEnv {
                                 vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
                             input.extend_from_slice(&v[2..]);
                             let res = self.resolve_internal_variant(body, input.as_slice())?;
-                            let cond = &res[1..res.rfind("{").unwrap()];
+                            let cond = &res[1..res.find("{").unwrap()];
                             format!("&:is(:where({cond}) *) {{\n{body}\n}}",)
                         } else {
                             let joined = v[1..]
@@ -263,7 +263,7 @@ impl EmitEnv {
                                     vec![(ParsedUnit::String(param.to_string()), empty_span())];
                                 input.extend_from_slice(&v[2..]);
                                 let res = self.resolve_internal_variant(body, input.as_slice())?;
-                                let cond = &res[1..res.rfind("{").unwrap()];
+                                let cond = &res[1..res.find("{").unwrap()];
                                 format!(
                                     "&:is(:where(.group{}){cond} *) {{\n{body}\n}}",
                                     escape_string_for_css(&format!("/{group_name}")),
@@ -279,7 +279,7 @@ impl EmitEnv {
                                 vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
                             input.extend_from_slice(&v[2..]);
                             let res = self.resolve_internal_variant(body, input.as_slice())?;
-                            let cond = &res[1..res.rfind("{").unwrap()];
+                            let cond = &res[1..res.find("{").unwrap()];
                             format!("&:is(:where(.group){cond} *) {{\n{body}\n}}",)
                         } else {
                             format!("&:is(:where(.group):is(:{joined}) *) {{\n{body}\n}}",)
@@ -400,71 +400,101 @@ impl EmitEnv {
 
         css_def.body = body_to_set?;
 
-        for v in parsed.0.variants.iter() {
-            if v.len() == 1 {
-                match &v[0].0 {
-                    ParsedUnit::String(v_str) => {
-                        if v_str == "before" {
-                            css_def.pseudo_elements.push("before".to_string());
-                        } else if v_str == "after" {
-                            css_def.pseudo_elements.push("after".to_string());
-                        } else if v_str == "placeholder" {
-                            css_def.pseudo_elements.push("placeholder".to_string());
-                        } else if v_str == "file" {
-                            css_def.pseudo_elements.push("file".to_string());
-                        } else if v_str == "selection" {
-                            css_def.pseudo_elements.push("selection".to_string());
-                        } else if v_str == "first-letter" {
-                            css_def.pseudo_elements.push("first-letter".to_string());
-                        } else if v_str == "first-line" {
-                            css_def.pseudo_elements.push("first-line".to_string());
-                        } else if v_str == "backdrop" {
-                            css_def.pseudo_elements.push("backdrop".to_string());
-                        } else if let Some(variant) = self
-                            .variants
-                            .iter()
-                            .find(|x| x.name.as_str() == v_str.as_str())
-                        {
-                            css_def.body = dbg!(variant.instantiate(&css_def.body));
-                        }
-                    }
-                    ParsedUnit::Raw(raw_str) => {
-                        if raw_str.starts_with("::") {
-                            css_def.pseudo_elements.push(raw_str[2..].to_string());
-                        } else {
-                            css_def.body = format!("{raw_str} {{\n{}\n}}", css_def.body);
-                        }
-                    }
-                }
-            } else {
-                // is built-in
-                if let ParsedUnit::String(s) = &v[0].0 {
-                    match s.as_str() {
-                        "min" => {
-                            if let ParsedUnit::Raw(r) = &v[1].0 {
-                                css_def.body = format!("@media (width >= {r}) {{\n{}\n}}", css_def.body);
+        for v in parsed.0.variants.iter()
+            // .rev()
+        {
+            match &v[0].0 {
+                ParsedUnit::String(v_str) => {
+                    if v_str == "before" {
+                        css_def.pseudo_elements.push("before".to_string());
+                    } else if v_str == "after" {
+                        css_def.pseudo_elements.push("after".to_string());
+                    } else if v_str == "placeholder" {
+                        css_def.pseudo_elements.push("placeholder".to_string());
+                    } else if v_str == "file" {
+                        css_def.pseudo_elements.push("file".to_string());
+                    } else if v_str == "selection" {
+                        css_def.pseudo_elements.push("selection".to_string());
+                    } else if v_str == "first-letter" {
+                        css_def.pseudo_elements.push("first-letter".to_string());
+                    } else if v_str == "first-line" {
+                        css_def.pseudo_elements.push("first-line".to_string());
+                    } else if v_str == "backdrop" {
+                        css_def.pseudo_elements.push("backdrop".to_string());
+                    } else {
+                        match v_str.as_str() {
+                            "min" => {
+                                if let ParsedUnit::Raw(r) = &v[1].0 {
+                                    css_def.body =
+                                        format!("@media (width >= {r}) {{\n{}\n}}", css_def.body);
+                                }
                             }
-                        }
-                        "max" => {
-                            if let ParsedUnit::Raw(r) = &v[1].0 {
-                                css_def.body = format!("@media (width < {r}) {{\n{}\n}}", css_def.body);
+                            "max" => {
+                                if let ParsedUnit::Raw(r) = &v[1].0 {
+                                    css_def.body =
+                                        format!("@media (width < {r}) {{\n{}\n}}", css_def.body);
+                                }
                             }
-                        }
-                        "@min" => {
-                            if let ParsedUnit::Raw(r) = &v[1].0 {
-                                css_def.body = format!("@container (width >= {r}) {{\n{}\n}}", css_def.body);
+                            "@min" => {
+                                if let ParsedUnit::Raw(r) = &v[1].0 {
+                                    css_def.body = format!(
+                                        "@container (width >= {r}) {{\n{}\n}}",
+                                        css_def.body
+                                    );
+                                }
                             }
-                        }
-                        "@max" => {
-                            if let ParsedUnit::Raw(r) = &v[1].0 {
-                                css_def.body = format!("@container (width < {r}) {{\n{}\n}}", css_def.body);
+                            "@max" => {
+                                if let ParsedUnit::Raw(r) = &v[1].0 {
+                                    css_def.body = format!(
+                                        "@container (width < {r}) {{\n{}\n}}",
+                                        css_def.body
+                                    );
+                                }
                             }
-                        }
-                        "supports" => {
-                            if let ParsedUnit::Raw(r) = &v[1].0 {
-                                css_def.body = format!("@supports ({r}) {{\n{}\n}}", css_def.body);
-                            } else {
-                                let joined = v[1..]
+                            "supports" => {
+                                if let ParsedUnit::Raw(r) = &v[1].0 {
+                                    css_def.body =
+                                        format!("@supports ({r}) {{\n{}\n}}", css_def.body);
+                                } else {
+                                    let joined = v[1..]
+                                        .iter()
+                                        .map(|x| {
+                                            if let ParsedUnit::String(s) = &x.0 {
+                                                s.to_owned()
+                                            } else {
+                                                String::new()
+                                            }
+                                        })
+                                        .collect::<Vec<_>>()
+                                        .join("-");
+                                    css_def.body =
+                                        format!("@supports ({joined}) {{\n{}\n}}", css_def.body);
+                                }
+                            }
+                            "not" if v[1].0 == ParsedUnit::String("supports".to_string()) => {
+                                if let ParsedUnit::Raw(r) = &v[1].0 {
+                                    css_def.body =
+                                        format!("@supports (not {r}) {{\n{}\n}}", css_def.body);
+                                } else {
+                                    let joined = v[1..]
+                                        .iter()
+                                        .map(|x| {
+                                            if let ParsedUnit::String(s) = &x.0 {
+                                                s.to_owned()
+                                            } else {
+                                                String::new()
+                                            }
+                                        })
+                                        .collect::<Vec<_>>()
+                                        .join("-");
+                                    css_def.body = format!(
+                                        "@supports (not {joined}) {{\n{}\n}}",
+                                        css_def.body
+                                    );
+                                }
+                            }
+                            _ => {
+                                let joined = v[0..]
                                     .iter()
                                     .map(|x| {
                                         if let ParsedUnit::String(s) = &x.0 {
@@ -475,34 +505,28 @@ impl EmitEnv {
                                     })
                                     .collect::<Vec<_>>()
                                     .join("-");
-                                css_def.body =
-                                    format!("@supports ({joined}) {{\n{}\n}}", css_def.body);
-                            }
-                        }
-                        "not" if v[1].0 == ParsedUnit::String("supports".to_string()) => {
-                            if let ParsedUnit::Raw(r) = &v[1].0 {
-                                css_def.body =
-                                    format!("@supports (not {r}) {{\n{}\n}}", css_def.body);
-                            } else {
-                                let joined = v[1..]
+                                dbg!(&joined);
+                                if let Some(variant) = self
+                                    .variants
                                     .iter()
-                                    .map(|x| {
-                                        if let ParsedUnit::String(s) = &x.0 {
-                                            s.to_owned()
-                                        } else {
-                                            String::new()
-                                        }
-                                    })
-                                    .collect::<Vec<_>>()
-                                    .join("-");
-                                css_def.body =
-                                    format!("@supports (not {joined}) {{\n{}\n}}", css_def.body);
+                                    .find(|x| x.name.as_str() == joined.as_str())
+                                {
+                                    css_def.body = dbg!(variant.instantiate(&css_def.body));
+                                } else {
+                                    css_def.body =
+                                        self.resolve_internal_variant(css_def.body.as_str(), v)?;
+                                }
                             }
                         }
-                        _ => {}
                     }
                 }
-                css_def.body = self.resolve_internal_variant(css_def.body.as_str(), v)?;
+                ParsedUnit::Raw(raw_str) => {
+                    if raw_str.starts_with("::") {
+                        css_def.pseudo_elements.push(raw_str[2..].to_string());
+                    } else {
+                        css_def.body = format!("{raw_str} {{\n{}\n}}", css_def.body);
+                    }
+                }
             }
         }
 

@@ -20,10 +20,11 @@ fn test_css_escape() {
 #[test]
 fn test_css_def() {
     let mut emit_env = EmitEnv::default();
+    dbg!(&emit_env.variants);
 
     let test_cases = vec![
-        ("abb:bg-red", "a"),
-        ("peer-has-focus-within:bg-red", "a"),
+        ("@3xl:peer-not-has-focus-within:bg-red", "a"),
+        ("abb-bbb:bg-red", "a"),
         ("starting:bg-red/75", "a"),
         ("group-has/abc-checked:bg-red", "a"),
         ("not-not-group-hover/abc:bg-#000000", "a"),

@@ -22,7 +22,9 @@
     }
 }
 
-@custom-variant abb{
+@custom-variant @3xl (@container (width >= 48rem));
+
+@custom-variant abb-bbb {
     &:hover {
         @slot;
     }

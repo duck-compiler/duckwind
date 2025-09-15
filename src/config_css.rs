@@ -417,7 +417,7 @@ pub fn variant_parser<'a>() -> impl Parser<'a, &'a str, Variant, extra::Err<Rich
 
 pub fn parse_utility_name<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
     any()
-        .filter(|c: &char| c.is_ascii_alphanumeric() || *c == '*' || *c == '/')
+        .filter(|c: &char| c.is_ascii_alphanumeric() || *c == '*' || *c == '/' || *c == '@')
         .repeated()
         .at_least(1)
         .collect::<String>()
