@@ -364,7 +364,7 @@ impl EmitEnv {
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == full.as_str()
                             && !utility.has_value
-                            && let Ok(res) = utility.instantiate(None)
+                            && let Ok(res) = utility.instantiate(None, false)
                         {
                             body_to_set = Some(res);
                         }
@@ -373,7 +373,7 @@ impl EmitEnv {
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == pre_str.as_str()
                             && utility.has_value
-                            && let Ok(res) = utility.instantiate(Some(last_str.as_str()))
+                            && let Ok(res) = utility.instantiate(Some(last_str.as_str()), false)
                         {
                             body_to_set = Some(res);
                         }
@@ -389,7 +389,7 @@ impl EmitEnv {
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == pre_str.as_str()
                             && utility.has_value
-                            && let Ok(res) = utility.instantiate(Some(raw_value.as_str()))
+                            && let Ok(res) = utility.instantiate(Some(raw_value.as_str()), true)
                         {
                             body_to_set = Some(res);
                         }
@@ -401,7 +401,7 @@ impl EmitEnv {
         css_def.body = body_to_set?;
 
         for v in parsed.0.variants.iter()
-            // .rev()
+        // .rev()
         {
             match &v[0].0 {
                 ParsedUnit::String(v_str) => {

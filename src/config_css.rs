@@ -42,7 +42,7 @@ pub enum UtilityInstantiationError {
 }
 
 impl Utility {
-    pub fn instantiate(&self, value: Option<&str>) -> Result<String, UtilityInstantiationError> {
+    pub fn instantiate(&self, value: Option<&str>, is_arb: bool) -> Result<String, UtilityInstantiationError> {
         if self.has_value {
             if value.is_none() {
                 return Err(UtilityInstantiationError::NeedValue);
@@ -74,7 +74,7 @@ impl Utility {
             let part = &self.parts[i];
             if let ParsedCodePart::ValueCall(call) = part {
                 for p in call.params.iter() {
-                    if p.literal_matches(&literal) {
+                    if p.literal_matches(&literal, is_arb) {
                         let mut res_string = String::new();
 
                         if i > 0 {
@@ -99,7 +99,7 @@ impl Utility {
                                         if value_call
                                             .params
                                             .iter()
-                                            .any(|param| param.literal_matches(&literal))
+                                            .any(|param| param.literal_matches(&literal, is_arb))
                                         {
                                             res_string.insert_str(0, value);
                                         } else {
@@ -138,7 +138,7 @@ impl Utility {
                                     if value_call
                                         .params
                                         .iter()
-                                        .any(|param| param.literal_matches(&literal))
+                                        .any(|param| param.literal_matches(&literal, is_arb))
                                     {
                                         res_string.push_str(value);
                                     } else {
@@ -203,9 +203,10 @@ pub enum ValueUsage {
 }
 
 impl ValueUsage {
-    pub fn literal_matches(&self, css_literal_src: &CssLiteral) -> bool {
+    pub fn literal_matches(&self, css_literal_src: &CssLiteral, is_arb: bool) -> bool {
         match self {
-            ValueUsage::Type(t) | ValueUsage::ArbType(t) => t.css_literal_matches(css_literal_src),
+            ValueUsage::Type(t) if !is_arb => t.css_literal_matches(css_literal_src),
+            ValueUsage::ArbType(t) if is_arb => t.css_literal_matches(css_literal_src),
             ValueUsage::Literal(s) => {
                 if let CssLiteral::Other(x) = css_literal_src {
                     x == s
@@ -213,6 +214,7 @@ impl ValueUsage {
                     false
                 }
             }
+            _ => false,
         }
     }
 }

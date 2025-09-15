@@ -422,6 +422,51 @@
     position: sticky;
 }
 
-@utility -abc {
-    color: red;
+@utility inset-* {
+    inset: calc(var(--spacing) * --value(number));
+    inset: calc(--value(fraction) * 100%);
+    inset: --value([*]);
+}
+@utility -inset-* {
+    inset: calc(var(--spacing) * ---value(number));
+    inset: calc(--value(fraction) * -100%);
+}
+@utility inset-px {
+    inset: 1px;
+}
+@utility -inset-px {
+    inset: -1px;
+}
+@utility inset-full {
+    inset: 100%;
+}
+@utility -inset-full {
+    inset: -100%;
+}
+@utility inset-auto {
+    inset: auto;
+}
+@utility inset-x-* {
+    inset-inline: calc(var(--spacing) * --value(number));
+    inset-inline: calc(--value(fraction) * 100%);
+    inset-inline: --value([*]);
+}
+@utility -inset-x-* {
+    inset-inline: calc(var(--spacing) * ---value(number));
+    inset-inline: calc(--value(fraction) * -100%);
+}
+@utility inset-x-px {
+    inset-inline: 1px;
+}
+@utility -inset-x-px {
+    inset-inline: -1px;
+}
+@utility inset-x-full {
+    inset-inline: 100%;
+}
+@utility -inset-x-full {
+    inset-inline: -100%;
+}
+@utility inset-x-auto {
+    inset-inline: auto;
 }
