@@ -87,8 +87,12 @@ impl EmitEnv {
         Some(match &v[0].0 {
             ParsedUnit::String(s) => match s.as_str() {
                 "has" => match &v[1].0 {
-                    ParsedUnit::String(param) => {
-                        format!("&:has(:{param}) {{\n{body}\n}}")
+                    ParsedUnit::String(_) => {
+                        let joined = v[1..].iter().map(|x| match &x.0{
+                            ParsedUnit::String(s) => s.to_string(),
+                            _ => String::new(),
+                        }).collect::<Vec<String>>().join("-");
+                        format!("&:has(:{joined}) {{\n{body}\n}}")
                     }
                     ParsedUnit::Raw(raw_param) => {
                         format!("&:has({raw_param}) {{\n{body}\n}}")
@@ -127,6 +131,10 @@ impl EmitEnv {
                 }
                 "peer" => match &v[1].0 {
                     ParsedUnit::String(param_1) => {
+                        let joined = v[1..].iter().map(|x| match &x.0{
+                            ParsedUnit::String(s) => s.to_string(),
+                            _ => String::new(),
+                        }).collect::<Vec<String>>().join("-");
                         if let Some((param, peer_name)) = param_1.split_once("/") {
                             if param == "has" || param == "not" {
                                 let mut input =
@@ -140,7 +148,7 @@ impl EmitEnv {
                                 )
                             } else {
                                 format!(
-                                    "&:is(:where(.peer{}):is(:{param}) ~ *) {{\n{body}\n}}",
+                                    "&:is(:where(.peer{}):is(:{joined}) ~ *) {{\n{body}\n}}",
                                     escape_string_for_css(&format!("/{peer_name}"))
                                 )
                             }
@@ -152,7 +160,7 @@ impl EmitEnv {
                             let cond = &res[1..res.rfind("{").unwrap()];
                             format!("&:is(:where(.peer){cond} ~ *) {{\n{body}\n}}",)
                         } else {
-                            format!("&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{body}\n}}",)
+                            format!("&:is(:where(.peer):is(:{joined}) ~ *) {{\n{body}\n}}",)
                         }
                     }
                     ParsedUnit::Raw(param_1) => {
@@ -174,7 +182,11 @@ impl EmitEnv {
                             let cond = &res[1..res.rfind("{").unwrap()];
                             format!("&:is(:where({cond}) *) {{\n{body}\n}}",)
                         } else {
-                            format!("&:is(:where(:{param_1}) *) {{\n{body}\n}}",)
+                            let joined = v[1..].iter().map(|x| match &x.0{
+                                ParsedUnit::String(s) => s.to_string(),
+                                _ => String::new(),
+                            }).collect::<Vec<String>>().join("-");
+                            format!("&:is(:where(:{joined}) *) {{\n{body}\n}}",)
                         }
                     }
                     ParsedUnit::Raw(param_1) => {
@@ -183,6 +195,10 @@ impl EmitEnv {
                 },
                 "group" => match &v[1].0 {
                     ParsedUnit::String(param_1) => {
+                        let joined = v[1..].iter().map(|x| match &x.0{
+                            ParsedUnit::String(s) => s.to_string(),
+                            _ => String::new(),
+                        }).collect::<Vec<String>>().join("-");
                         if let Some((param, group_name)) = param_1.split_once("/") {
                             if param == "has" || param == "not" {
                                 let mut input =
@@ -196,7 +212,7 @@ impl EmitEnv {
                                 )
                             } else {
                                 format!(
-                                    "&:is(:where(.group{}):is(:{param}) *) {{\n{body}\n}}",
+                                    "&:is(:where(.group{}):is(:{joined}) *) {{\n{body}\n}}",
                                     escape_string_for_css(&format!("/{group_name}")),
                                 )
                             }
@@ -208,7 +224,7 @@ impl EmitEnv {
                             let cond = &res[1..res.rfind("{").unwrap()];
                             format!("&:is(:where(.group){cond} *) {{\n{body}\n}}",)
                         } else {
-                            format!("&:is(:where(.group):is(:{param_1}) *) {{\n{body}\n}}",)
+                            format!("&:is(:where(.group):is(:{joined}) *) {{\n{body}\n}}",)
                         }
                     }
                     ParsedUnit::Raw(param_1) => {
