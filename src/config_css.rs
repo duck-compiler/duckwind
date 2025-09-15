@@ -330,32 +330,85 @@ pub fn variant_rec_text<'a>()
     })
 }
 
+pub fn variant_short_rec_text<'a>()
+-> impl Parser<'a, &'a str, Vec<VariantParseUnit>, extra::Err<Rich<'a, char>>> + Clone {
+    recursive(|s| {
+        just("(")
+            .ignore_then(
+                choice((
+                    just("(").rewind().ignore_then(s.clone()).map(
+                        |mut x: Vec<VariantParseUnit>| {
+                            x.insert(0, VariantParseUnit::Char('('));
+                            x.push(VariantParseUnit::Char(')'));
+                            x
+                        },
+                    ),
+                    any()
+                        .and_is(just(")").not())
+                        .map(|x| vec![VariantParseUnit::Char(x)]),
+                ))
+                .repeated()
+                .collect::<Vec<_>>(),
+            )
+            .then_ignore(just(")"))
+            .map(|x| x.into_iter().flat_map(Vec::into_iter).collect())
+    })
+}
+
 pub fn variant_parser<'a>() -> impl Parser<'a, &'a str, Variant, extra::Err<Rich<'a, char>>> {
-    just("@custom-variant")
-        .then(ignore_whitespace2())
-        .then(parse_utility_name())
-        .then(ignore_whitespace2())
-        .then_ignore(just("{").rewind())
-        .then(variant_rec_text())
-        .map(|((((a, b), name), d), units)| {
-            let mut s_buf = String::new();
-            let mut target = None;
+    choice((
+        just("@custom-variant")
+            .then(ignore_whitespace2())
+            .then(parse_utility_name())
+            .then(ignore_whitespace2())
+            .then_ignore(just("{").rewind())
+            .then(variant_rec_text())
+            .map(|((((a, b), name), d), units)| {
+                let mut s_buf = String::new();
+                let mut target = None;
 
-            for unit in units {
-                match unit {
-                    VariantParseUnit::Char(c) => s_buf.push(c),
-                    VariantParseUnit::Target(idx) => target = Some(idx),
+                for unit in units {
+                    match unit {
+                        VariantParseUnit::Char(c) => s_buf.push(c),
+                        VariantParseUnit::Target(idx) => target = Some(idx),
+                    }
                 }
-            }
 
-            let name_len = name.len();
+                let name_len = name.len();
 
-            Variant {
-                name,
-                body: s_buf,
-                target: target.expect("need target") - (a.len() + b.len() + d.len() + 1 + name_len),
-            }
-        })
+                Variant {
+                    name,
+                    body: s_buf,
+                    target: target.expect("need target")
+                        - (a.len() + b.len() + d.len() + 1 + name_len),
+                }
+            }),
+        just("@custom-variant")
+            .ignore_then(ignore_whitespace2())
+            .ignore_then(parse_utility_name())
+            .then_ignore(ignore_whitespace2())
+            .then_ignore(just("(").rewind())
+            .then(variant_short_rec_text())
+            .then_ignore(just(";"))
+            .map(|(name, units)| {
+                let mut s_buf = String::new();
+
+                for unit in units {
+                    match unit {
+                        VariantParseUnit::Char(c) => s_buf.push(c),
+                        _ => panic!("no here"),
+                    }
+                }
+                let len = s_buf.len();
+                s_buf.push_str(" {\\n\\n}");
+
+                Variant {
+                    name,
+                    body: s_buf,
+                    target: len + 3,
+                }
+            }),
+    ))
 }
 
 pub fn parse_utility_name<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
@@ -485,10 +538,7 @@ mod tests {
     fn test_variant_parser() {
         // text-[100]
         let util = variant_parser()
-            .parse(
-                r#"@custom-variant myvar {&:hover{&:nth-of-child(-n+3){
-                @slot; }}}"#,
-            )
+            .parse("@custom-variant lol (&:is(.test));")
             .into_result()
             .expect("utility error");
         dbg!(util);
