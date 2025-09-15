@@ -16,11 +16,11 @@ mod parser;
 
 const DEFAULT_CONFIG: &str = include_str!("default_config.css");
 
-pub fn ignore_whitespace<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
+pub fn ignore_whitespace<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     any().filter(|c: &char| *c == ' ').repeated().collect()
 }
 
-pub fn ignore_whitespace2<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
+pub fn ignore_whitespace2<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     any()
         .filter(|c: &char| c.is_whitespace())
         .repeated()

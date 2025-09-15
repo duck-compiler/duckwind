@@ -42,7 +42,11 @@ pub enum UtilityInstantiationError {
 }
 
 impl Utility {
-    pub fn instantiate(&self, value: Option<&str>, is_arb: bool) -> Result<String, UtilityInstantiationError> {
+    pub fn instantiate(
+        &self,
+        value: Option<&str>,
+        is_arb: bool,
+    ) -> Result<String, UtilityInstantiationError> {
         if self.has_value {
             if value.is_none() {
                 return Err(UtilityInstantiationError::NeedValue);
@@ -224,7 +228,7 @@ pub struct ValueCall {
     params: Vec<ValueUsage>,
 }
 
-pub fn parse_css_data_type<'a>() -> impl Parser<'a, &'a str, ValueType, extra::Err<Rich<'a, char>>>
+pub fn parse_css_data_type<'a>() -> impl Parser<'a, &'a str, ValueType, extra::Err<Rich<'a, char>>> + Clone
 {
     choice((
         just("length").map(|_| ValueType::Length),
@@ -242,7 +246,7 @@ pub fn parse_css_data_type<'a>() -> impl Parser<'a, &'a str, ValueType, extra::E
     ))
 }
 
-pub fn parse_literal<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
+pub fn parse_literal<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     just("\"")
         .ignore_then(
             any()
@@ -253,7 +257,7 @@ pub fn parse_literal<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'
         .then_ignore(just("\""))
 }
 
-pub fn parse_value_param<'a>() -> impl Parser<'a, &'a str, ValueUsage, extra::Err<Rich<'a, char>>> {
+pub fn parse_value_param<'a>() -> impl Parser<'a, &'a str, ValueUsage, extra::Err<Rich<'a, char>>> + Clone {
     choice((
         parse_css_data_type().map(ValueUsage::Type),
         just("[")
@@ -264,7 +268,7 @@ pub fn parse_value_param<'a>() -> impl Parser<'a, &'a str, ValueUsage, extra::Er
     ))
 }
 
-pub fn parse_value_call<'a>() -> impl Parser<'a, &'a str, ValueCall, extra::Err<Rich<'a, char>>> {
+pub fn parse_value_call<'a>() -> impl Parser<'a, &'a str, ValueCall, extra::Err<Rich<'a, char>>> + Clone {
     just("--value")
         .ignore_then(just("("))
         .ignore_then(
@@ -467,26 +471,37 @@ pub fn config_parser<'a>() -> impl Parser<'a, &'a str, UserConfig, extra::Err<Ri
     })
 }
 
+pub fn parse_utility_text<'a>()
+-> impl Parser<'a, &'a str, Vec<RawParsedCodePart>, extra::Err<Rich<'a, char>>> {
+    recursive(|s| {
+        choice((
+            just("{")
+                .ignore_then(s.clone())
+                .map(|mut x: Vec<RawParsedCodePart>| {
+                    x.insert(0, RawParsedCodePart::Char('{'));
+                    x.push(RawParsedCodePart::Char('}'));
+                    x
+                }),
+            parse_value_call().map(|x| vec![RawParsedCodePart::ValueCall(x)]),
+            any()
+                .and_is(just("}").not())
+                .map(|c| vec![RawParsedCodePart::Char(c)]),
+        ))
+        .repeated()
+        .collect::<Vec<_>>()
+        .then_ignore(just("}"))
+        .map(|x| x.into_iter().flat_map(Vec::into_iter).collect())
+    })
+}
 pub fn parse_utility<'a>() -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<'a, char>>> {
     just("@utility")
         .ignore_then(ignore_whitespace())
         .ignore_then(parse_utility_name())
         .then_ignore(ignore_whitespace())
         .then_ignore(just("{"))
+        .then(parse_utility_text())
         .then_ignore(ignore_whitespace())
-        .then(
-            choice((
-                parse_value_call().map(RawParsedCodePart::ValueCall),
-                any()
-                    .and_is(just("--value").not())
-                    .and_is(just("}").not())
-                    .map(RawParsedCodePart::Char),
-            ))
-            .repeated()
-            .collect::<Vec<_>>(),
-        )
-        .then_ignore(ignore_whitespace())
-        .then_ignore(just("}"))
+        // .then_ignore(just("}"))
         .map(|(name, content)| {
             let mut parts = Vec::new();
             let mut buf = String::new();
