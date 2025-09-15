@@ -22,6 +22,12 @@
     }
 }
 
+@custom-variant abb{
+    &:hover {
+        @slot;
+    }
+}
+
 @utility bg-* {
     background-color: --value(color);
 }

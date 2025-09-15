@@ -86,12 +86,58 @@ impl EmitEnv {
     pub fn resolve_internal_variant(&self, body: &str, v: &[(ParsedUnit, DWS)]) -> Option<String> {
         Some(match &v[0].0 {
             ParsedUnit::String(s) => match s.as_str() {
+                "data" => {
+                    if let ParsedUnit::Raw(r) = &v[1].0 {
+                        format!("&[data-{r}] {{\n{body}\n}}")
+                    } else {
+                        let joined = v[1..]
+                            .iter()
+                            .map(|x| {
+                                if let ParsedUnit::String(s) = &x.0 {
+                                    s.to_owned()
+                                } else {
+                                    String::new()
+                                }
+                            })
+                            .collect::<Vec<_>>()
+                            .join("-");
+                        format!("&[data-{joined}] {{\n{body}\n}}")
+                    }
+                }
+                "nth" => match &v[1].0 {
+                    ParsedUnit::Raw(raw_value) => {
+                        format!("&:nth-child({raw_value}) {{\n{body}\n}}")
+                    }
+                    _ => return None,
+                },
+                "nth-last" => match &v[1].0 {
+                    ParsedUnit::Raw(raw_value) => {
+                        format!("&:nth-last-child({raw_value}) {{\n{body}\n}}")
+                    }
+                    _ => return None,
+                },
+                "nth-of-type" => match &v[1].0 {
+                    ParsedUnit::Raw(raw_value) => {
+                        format!("&:nth-of-type({raw_value}) {{\n{body}\n}}")
+                    }
+                    _ => return None,
+                },
+                "nth-last-of-type" => match &v[1].0 {
+                    ParsedUnit::Raw(raw_value) => {
+                        format!("&:nth-last-of-type({raw_value}) {{\n{body}\n}}")
+                    }
+                    _ => return None,
+                },
                 "has" => match &v[1].0 {
                     ParsedUnit::String(_) => {
-                        let joined = v[1..].iter().map(|x| match &x.0{
-                            ParsedUnit::String(s) => s.to_string(),
-                            _ => String::new(),
-                        }).collect::<Vec<String>>().join("-");
+                        let joined = v[1..]
+                            .iter()
+                            .map(|x| match &x.0 {
+                                ParsedUnit::String(s) => s.to_string(),
+                                _ => String::new(),
+                            })
+                            .collect::<Vec<String>>()
+                            .join("-");
                         format!("&:has(:{joined}) {{\n{body}\n}}")
                     }
                     ParsedUnit::Raw(raw_param) => {
@@ -131,10 +177,14 @@ impl EmitEnv {
                 }
                 "peer" => match &v[1].0 {
                     ParsedUnit::String(param_1) => {
-                        let joined = v[1..].iter().map(|x| match &x.0{
-                            ParsedUnit::String(s) => s.to_string(),
-                            _ => String::new(),
-                        }).collect::<Vec<String>>().join("-");
+                        let joined = v[1..]
+                            .iter()
+                            .map(|x| match &x.0 {
+                                ParsedUnit::String(s) => s.to_string(),
+                                _ => String::new(),
+                            })
+                            .collect::<Vec<String>>()
+                            .join("-");
                         if let Some((param, peer_name)) = param_1.split_once("/") {
                             if param == "has" || param == "not" {
                                 let mut input =
@@ -182,10 +232,14 @@ impl EmitEnv {
                             let cond = &res[1..res.rfind("{").unwrap()];
                             format!("&:is(:where({cond}) *) {{\n{body}\n}}",)
                         } else {
-                            let joined = v[1..].iter().map(|x| match &x.0{
-                                ParsedUnit::String(s) => s.to_string(),
-                                _ => String::new(),
-                            }).collect::<Vec<String>>().join("-");
+                            let joined = v[1..]
+                                .iter()
+                                .map(|x| match &x.0 {
+                                    ParsedUnit::String(s) => s.to_string(),
+                                    _ => String::new(),
+                                })
+                                .collect::<Vec<String>>()
+                                .join("-");
                             format!("&:is(:where(:{joined}) *) {{\n{body}\n}}",)
                         }
                     }
@@ -195,10 +249,14 @@ impl EmitEnv {
                 },
                 "group" => match &v[1].0 {
                     ParsedUnit::String(param_1) => {
-                        let joined = v[1..].iter().map(|x| match &x.0{
-                            ParsedUnit::String(s) => s.to_string(),
-                            _ => String::new(),
-                        }).collect::<Vec<String>>().join("-");
+                        let joined = v[1..]
+                            .iter()
+                            .map(|x| match &x.0 {
+                                ParsedUnit::String(s) => s.to_string(),
+                                _ => String::new(),
+                            })
+                            .collect::<Vec<String>>()
+                            .join("-");
                         if let Some((param, group_name)) = param_1.split_once("/") {
                             if param == "has" || param == "not" {
                                 let mut input =
@@ -379,24 +437,27 @@ impl EmitEnv {
                     }
                 }
             } else {
+                // is built-in
                 if let ParsedUnit::String(s) = &v[0].0 {
                     match s.as_str() {
-                        "data" => {
+                        "min" => {
                             if let ParsedUnit::Raw(r) = &v[1].0 {
-                                css_def.body = format!("&[data-{r}] {{\n{}\n}}", css_def.body);
-                            } else {
-                                let joined = v[1..]
-                                    .iter()
-                                    .map(|x| {
-                                        if let ParsedUnit::String(s) = &x.0 {
-                                            s.to_owned()
-                                        } else {
-                                            String::new()
-                                        }
-                                    })
-                                    .collect::<Vec<_>>()
-                                    .join("-");
-                                css_def.body = format!("&[data-{joined}] {{\n{}\n}}", css_def.body);
+                                css_def.body = format!("@media (width >= {r}) {{\n{}\n}}", css_def.body);
+                            }
+                        }
+                        "max" => {
+                            if let ParsedUnit::Raw(r) = &v[1].0 {
+                                css_def.body = format!("@media (width < {r}) {{\n{}\n}}", css_def.body);
+                            }
+                        }
+                        "@min" => {
+                            if let ParsedUnit::Raw(r) = &v[1].0 {
+                                css_def.body = format!("@container (width >= {r}) {{\n{}\n}}", css_def.body);
+                            }
+                        }
+                        "@max" => {
+                            if let ParsedUnit::Raw(r) = &v[1].0 {
+                                css_def.body = format!("@container (width < {r}) {{\n{}\n}}", css_def.body);
                             }
                         }
                         "supports" => {
@@ -441,7 +502,6 @@ impl EmitEnv {
                         _ => {}
                     }
                 }
-                // is built-in
                 css_def.body = self.resolve_internal_variant(css_def.body.as_str(), v)?;
             }
         }

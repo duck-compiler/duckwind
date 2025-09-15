@@ -22,6 +22,7 @@ fn test_css_def() {
     let mut emit_env = EmitEnv::default();
 
     let test_cases = vec![
+        ("abb:bg-red", "a"),
         ("peer-has-focus-within:bg-red", "a"),
         ("starting:bg-red/75", "a"),
         ("group-has/abc-checked:bg-red", "a"),
