@@ -470,3 +470,171 @@
 @utility inset-x-auto {
     inset-inline: auto;
 }
+@utility inset-y-* {
+    inset-block: calc(var(--spacing) * --value(number));
+    inset-block: calc(--value(fraction) * 100%);
+    inset-block: --value([*]);
+}
+@utility -inset-y-* {
+    inset-block: calc(var(--spacing) * ---value(number));
+    inset-block: calc(--value(fraction) * -100%);
+}
+@utility inset-y-px {
+    inset-block: 1px;
+}
+@utility -inset-y-px {
+    inset-block: -1px;
+}
+@utility inset-y-full {
+    inset-block: 100%;
+}
+@utility -inset-y-full {
+    inset-block: -100%;
+}
+@utility inset-y-auto {
+    inset-block: auto;
+}
+@utility start-* {
+    inset-inline-start: calc(var(--spacing) * --value(number));
+    inset-inline-start: calc(--value(fraction) * 100%);
+    inset-inline-start: --value([*]);
+}
+@utility -start-* {
+    inset-inline-start: calc(var(--spacing) * ---value(number));
+    inset-inline-start: calc(--value(fraction) * -100%);
+}
+@utility start-px {
+    inset-inline-start: 1px;
+}
+@utility -start-px {
+    inset-inline-start: -1px;
+}
+@utility start-full {
+    inset-inline-start: 100%;
+}
+@utility -start-full {
+    inset-inline-start: -100%;
+}
+@utility start-auto {
+    inset-inline-start: auto;
+}
+@utility end-* {
+    inset-inline-end: calc(var(--spacing) * --value(number));
+    inset-inline-end: calc(--value(fraction) * 100%);
+    inset-inline-end: --value([*]);
+}
+@utility -end-* {
+    inset-inline-end: calc(var(--spacing) * ---value(number));
+    inset-inline-end: calc(--value(fraction) * -100%);
+}
+@utility end-px {
+    inset-inline-end: 1px;
+}
+@utility -end-px {
+    inset-inline-end: -1px;
+}
+@utility end-full {
+    inset-inline-end: 100%;
+}
+@utility -end-full {
+    inset-inline-end: -100%;
+}
+@utility end-auto {
+    inset-inline-end: auto;
+}
+@utility top-* {
+    top: calc(var(--spacing) * --value(number));
+    top: calc(--value(fraction) * 100%);
+    top: --value([*]);
+}
+@utility -top-* {
+    top: calc(var(--spacing) * ---value(number));
+    top: calc(--value(fraction) * -100%);
+}
+@utility top-px {
+    top: 1px;
+}
+@utility -top-px {
+    top: -1px;
+}
+@utility top-full {
+    top: 100%;
+}
+@utility -top-full {
+    top: -100%;
+}
+@utility top-auto {
+    top: auto;
+}
+@utility left-* {
+    left: calc(var(--spacing) * --value(number));
+    left: calc(--value(fraction) * 100%);
+    left: --value([*]);
+}
+@utility -left-* {
+    left: calc(var(--spacing) * ---value(number));
+    left: calc(--value(fraction) * -100%);
+}
+@utility left-px {
+    left: 1px;
+}
+@utility -left-px {
+    left: -1px;
+}
+@utility left-full {
+    left: 100%;
+}
+@utility -left-full {
+    left: -100%;
+}
+@utility left-auto {
+    left: auto;
+}
+@utility right-* {
+    right: calc(var(--spacing) * --value(number));
+    right: calc(--value(fraction) * 100%);
+    right: --value([*]);
+}
+@utility -right-* {
+    right: calc(var(--spacing) * ---value(number));
+    right: calc(--value(fraction) * -100%);
+}
+@utility right-px {
+    right: 1px;
+}
+@utility -right-px {
+    right: -1px;
+}
+@utility right-full {
+    right: 100%;
+}
+@utility -right-full {
+    right: -100%;
+}
+@utility right-auto {
+    right: auto;
+}
+@utility bottom-* {
+    bottom: calc(var(--spacing) * --value(number));
+    bottom: calc(--value(fraction) * 100%);
+    bottom: --value([*]);
+}
+@utility -bottom-* {
+    bottom: calc(var(--spacing) * ---value(number));
+    bottom: calc(--value(fraction) * -100%);
+}
+@utility bottom-px {
+    bottom: 1px;
+}
+@utility -bottom-px {
+    bottom: -1px;
+}
+@utility bottom-full {
+    bottom: 100%;
+}
+@utility -bottom-full {
+    bottom: -100%;
+}
+@utility bottom-auto {
+    bottom: auto;
+}
