@@ -1,0 +1,7 @@
+- theme vars
+    - 3xl vars
+    - spacing var
+    - font vars
+- * and **
+- https://tailwindcss.com/docs/line-height text-<size/<number>
+- tests
