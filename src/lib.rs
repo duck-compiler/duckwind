@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use chumsky::{IterParser, Parser, error::Rich, extra, prelude::any};
 
 use crate::{
@@ -337,6 +339,70 @@ impl EmitEnv {
                     }
                 }
             } else {
+                match &v[0].0 {
+                    ParsedUnit::String(s) => match s.as_str() {
+                        "data" => {
+                            if let ParsedUnit::Raw(r) = &v[1].0 {
+                                css_def.body = format!("&[data-{r}] {{\n{}\n}}", css_def.body);
+                            } else {
+                                let joined = v[1..]
+                                    .iter()
+                                    .map(|x| {
+                                        if let ParsedUnit::String(s) = &x.0 {
+                                            s.to_owned()
+                                        } else {
+                                            String::new()
+                                        }
+                                    })
+                                    .collect::<Vec<_>>()
+                                    .join("-");
+                                css_def.body =
+                                    format!("&[data-{joined}] {{\n{}\n}}", css_def.body);
+                            }
+                        }
+                        "supports" => {
+                            if let ParsedUnit::Raw(r) = &v[1].0 {
+                                css_def.body = format!("@supports ({r}) {{\n{}\n}}", css_def.body);
+                            } else {
+                                let joined = v[1..]
+                                    .iter()
+                                    .map(|x| {
+                                        if let ParsedUnit::String(s) = &x.0 {
+                                            s.to_owned()
+                                        } else {
+                                            String::new()
+                                        }
+                                    })
+                                    .collect::<Vec<_>>()
+                                    .join("-");
+                                css_def.body =
+                                    format!("@supports ({joined}) {{\n{}\n}}", css_def.body);
+                            }
+                        }
+                        "not" if &v[1].0 == &ParsedUnit::String("supports".to_string()) => {
+                            if let ParsedUnit::Raw(r) = &v[1].0 {
+                                css_def.body =
+                                    format!("@supports (not {r}) {{\n{}\n}}", css_def.body);
+                            } else {
+                                let joined = v[1..]
+                                    .iter()
+                                    .map(|x| {
+                                        if let ParsedUnit::String(s) = &x.0 {
+                                            s.to_owned()
+                                        } else {
+                                            String::new()
+                                        }
+                                    })
+                                    .collect::<Vec<_>>()
+                                    .join("-");
+                                css_def.body =
+                                    format!("@supports (not {joined}) {{\n{}\n}}", css_def.body);
+                            }
+                        }
+                        _ => {}
+                    },
+                    _ => {}
+                }
                 // is built-in
                 css_def.body = self.resolve_internal_variant(css_def.body.as_str(), v);
             }
