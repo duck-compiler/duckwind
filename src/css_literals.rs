@@ -333,7 +333,8 @@ pub fn absolute_size_parser<'a>()
     ))
     .map(|size| {
         use AbsoluteSize::*;
-        let value = match size {
+
+        match size {
             "xx-small" => XxSmall,
             "x-small" => XSmall,
             "small" => Small,
@@ -343,9 +344,7 @@ pub fn absolute_size_parser<'a>()
             "xx-large" => XxLarge,
             "xxx-large" => XxxLarge,
             _ => panic!("{size:?} not implemented"),
-        };
-
-        value
+        }
     })
 }
 

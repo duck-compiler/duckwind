@@ -54,7 +54,7 @@ pub fn parse_raw_text<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<
                         .rewind()
                         .ignore_then(parser.clone())
                         .map(|x| format!("[{x}]")),
-                    any().filter(|c: &char| *c != ']').map(|c| String::from(c)),
+                    any().filter(|c: &char| *c != ']').map(String::from),
                 ))
                 .repeated()
                 .collect::<Vec<String>>(),

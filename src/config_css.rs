@@ -92,7 +92,7 @@ impl Utility {
                                             }
                                             break;
                                         } else {
-                                            res_string.insert_str(0, &s);
+                                            res_string.insert_str(0, s);
                                         }
                                     }
                                     ParsedCodePart::ValueCall(value_call) => {
@@ -131,7 +131,7 @@ impl Utility {
                                         }
                                         break;
                                     } else {
-                                        res_string.push_str(&s);
+                                        res_string.push_str(s);
                                     }
                                 }
                                 ParsedCodePart::ValueCall(value_call) => {
@@ -155,7 +155,7 @@ impl Utility {
             i += 1;
         }
 
-        return Err(UtilityInstantiationError::NothingMatched);
+        Err(UtilityInstantiationError::NothingMatched)
     }
 }
 
@@ -226,6 +226,7 @@ pub fn parse_css_data_type<'a>() -> impl Parser<'a, &'a str, ValueType, extra::E
 {
     choice((
         just("length").map(|_| ValueType::Length),
+        just("percentage").map(|_| ValueType::Percentage),
         just("color").map(|_| ValueType::Color),
         just("ratio").map(|_| ValueType::Ratio),
         just("number").map(|_| ValueType::Number),
@@ -535,7 +536,6 @@ mod tests {
             .into_result()
             .expect("utility error");
         // dbg!(util.instantiate(Some("lit")));
-        dbg!(util.instantiate(None));
         assert!(false);
     }
 

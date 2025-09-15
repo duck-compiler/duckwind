@@ -7,7 +7,7 @@ use chumsky::{
     select_ref,
 };
 
-use crate::lexer::{Context, DWS, Spanned, Token, empty_span};
+use crate::lexer::{Context, DWS, Spanned, Token};
 
 #[derive(Debug, Clone, Default)]
 pub struct Config {}
@@ -91,12 +91,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use chumsky::Parser;
+    // use chumsky::Parser;
 
-    use crate::{
-        lexer::{empty_span, lexer, token_to_empty_span},
-        parser::{Parsed, duckwind_parser, make_eoi, make_input},
-    };
+    // use crate::{
+    //     lexer::{empty_span, lexer, token_to_empty_span},
+    //     parser::{Parsed, duckwind_parser, make_eoi, make_input},
+    // };
 
     // #[test]
     // fn test_parser() {
@@ -152,14 +152,12 @@ mod tests {
     //     //         .parse(make_input(make_eoi("test_file", src), &result))
     //     //         .into_result()
     //     //         .expect(&format!("errors parsing {src}"));
-        //     result.1 = empty_span();
-        //     result.0.make_empty();
-        //     assert_eq!(
-        //         expected, result.0,
-        //         "{src} returned {result:?} and not {expected:?}"
-        //     );
-        // }
-        // // }
-
-
+    //     result.1 = empty_span();
+    //     result.0.make_empty();
+    //     assert_eq!(
+    //         expected, result.0,
+    //         "{src} returned {result:?} and not {expected:?}"
+    //     );
+    // }
+    // // }
 }

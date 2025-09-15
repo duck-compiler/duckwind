@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use chumsky::{IterParser, Parser, error::Rich, extra, prelude::any};
 
 use crate::{
@@ -16,7 +14,7 @@ mod css_literals;
 mod lexer;
 mod parser;
 
-const DEFAULT_CONFIG: &'static str = include_str!("default_config.css");
+const DEFAULT_CONFIG: &str = include_str!("default_config.css");
 
 pub fn ignore_whitespace<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
     any().filter(|c: &char| *c == ' ').repeated().collect()
@@ -38,7 +36,7 @@ pub struct CssDef {
 
 pub fn is_valid_css_char(c: char) -> bool {
     // https://developer.mozilla.org/en-US/docs/Web/CSS/ident
-    return c.is_ascii_digit() || c.is_ascii_alphabetic() || c == '-' || c == '_' || !c.is_ascii();
+    c.is_ascii_digit() || c.is_ascii_alphabetic() || c == '-' || c == '_' || !c.is_ascii()
 }
 
 pub fn escape_string_for_css(s: &str) -> String {
@@ -146,17 +144,15 @@ impl EmitEnv {
                                     escape_string_for_css(&format!("/{peer_name}"))
                                 )
                             }
+                        } else if param_1 == "has" || param_1 == "not" {
+                            let mut input =
+                                vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
+                            input.extend_from_slice(&v[2..]);
+                            let res = self.resolve_internal_variant(body, input.as_slice())?;
+                            let cond = &res[1..res.rfind("{").unwrap()];
+                            format!("&:is(:where(.peer){cond} ~ *) {{\n{body}\n}}",)
                         } else {
-                            if param_1 == "has" || param_1 == "not" {
-                                let mut input =
-                                    vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
-                                input.extend_from_slice(&v[2..]);
-                                let res = self.resolve_internal_variant(body, input.as_slice())?;
-                                let cond = &res[1..res.rfind("{").unwrap()];
-                                format!("&:is(:where(.peer){cond} ~ *) {{\n{body}\n}}",)
-                            } else {
-                                format!("&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{body}\n}}",)
-                            }
+                            format!("&:is(:where(.peer):is(:{param_1}) ~ *) {{\n{body}\n}}",)
                         }
                     }
                     ParsedUnit::Raw(param_1) => {
@@ -204,17 +200,15 @@ impl EmitEnv {
                                     escape_string_for_css(&format!("/{group_name}")),
                                 )
                             }
+                        } else if param_1 == "has" || param_1 == "not" {
+                            let mut input =
+                                vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
+                            input.extend_from_slice(&v[2..]);
+                            let res = self.resolve_internal_variant(body, input.as_slice())?;
+                            let cond = &res[1..res.rfind("{").unwrap()];
+                            format!("&:is(:where(.group){cond} *) {{\n{body}\n}}",)
                         } else {
-                            if param_1 == "has" || param_1 == "not" {
-                                let mut input =
-                                    vec![(ParsedUnit::String(param_1.to_string()), empty_span())];
-                                input.extend_from_slice(&v[2..]);
-                                let res = self.resolve_internal_variant(body, input.as_slice())?;
-                                let cond = &res[1..res.rfind("{").unwrap()];
-                                format!("&:is(:where(.group){cond} *) {{\n{body}\n}}",)
-                            } else {
-                                format!("&:is(:where(.group):is(:{param_1}) *) {{\n{body}\n}}",)
-                            }
+                            format!("&:is(:where(.group):is(:{param_1}) *) {{\n{body}\n}}",)
                         }
                     }
                     ParsedUnit::Raw(param_1) => {
@@ -294,18 +288,20 @@ impl EmitEnv {
 
                     println!("{:?}", self.utilities);
                     for utility in self.utilities.iter() {
-                        if utility.name.as_str() == full.as_str() && !utility.has_value {
-                            if let Ok(res) = utility.instantiate(None) {
-                                body_to_set = Some(res);
-                            }
+                        if utility.name.as_str() == full.as_str()
+                            && !utility.has_value
+                            && let Ok(res) = utility.instantiate(None)
+                        {
+                            body_to_set = Some(res);
                         }
                     }
 
                     for utility in self.utilities.iter() {
-                        if utility.name.as_str() == pre_str.as_str() && utility.has_value {
-                            if let Ok(res) = utility.instantiate(Some(last_str.as_str())) {
-                                body_to_set = Some(res);
-                            }
+                        if utility.name.as_str() == pre_str.as_str()
+                            && utility.has_value
+                            && let Ok(res) = utility.instantiate(Some(last_str.as_str()))
+                        {
+                            body_to_set = Some(res);
                         }
                     }
 
@@ -317,10 +313,11 @@ impl EmitEnv {
                 }
                 ParsedUnit::Raw(raw_value) => {
                     for utility in self.utilities.iter() {
-                        if utility.name.as_str() == pre_str.as_str() && utility.has_value {
-                            if let Ok(res) = utility.instantiate(Some(raw_value.as_str())) {
-                                body_to_set = Some(res);
-                            }
+                        if utility.name.as_str() == pre_str.as_str()
+                            && utility.has_value
+                            && let Ok(res) = utility.instantiate(Some(raw_value.as_str()))
+                        {
+                            body_to_set = Some(res);
                         }
                     }
                 }
@@ -349,14 +346,12 @@ impl EmitEnv {
                             css_def.pseudo_elements.push("first-line".to_string());
                         } else if v_str == "backdrop" {
                             css_def.pseudo_elements.push("backdrop".to_string());
-                        } else {
-                            if let Some(variant) = self
-                                .variants
-                                .iter()
-                                .find(|x| x.name.as_str() == v_str.as_str())
-                            {
-                                css_def.body = dbg!(variant.instantiate(&css_def.body));
-                            }
+                        } else if let Some(variant) = self
+                            .variants
+                            .iter()
+                            .find(|x| x.name.as_str() == v_str.as_str())
+                        {
+                            css_def.body = dbg!(variant.instantiate(&css_def.body));
                         }
                     }
                     ParsedUnit::Raw(raw_str) => {
@@ -368,8 +363,8 @@ impl EmitEnv {
                     }
                 }
             } else {
-                match &v[0].0 {
-                    ParsedUnit::String(s) => match s.as_str() {
+                if let ParsedUnit::String(s) = &v[0].0 {
+                    match s.as_str() {
                         "data" => {
                             if let ParsedUnit::Raw(r) = &v[1].0 {
                                 css_def.body = format!("&[data-{r}] {{\n{}\n}}", css_def.body);
@@ -407,7 +402,7 @@ impl EmitEnv {
                                     format!("@supports ({joined}) {{\n{}\n}}", css_def.body);
                             }
                         }
-                        "not" if &v[1].0 == &ParsedUnit::String("supports".to_string()) => {
+                        "not" if v[1].0 == ParsedUnit::String("supports".to_string()) => {
                             if let ParsedUnit::Raw(r) = &v[1].0 {
                                 css_def.body =
                                     format!("@supports (not {r}) {{\n{}\n}}", css_def.body);
@@ -428,8 +423,7 @@ impl EmitEnv {
                             }
                         }
                         _ => {}
-                    },
-                    _ => {}
+                    }
                 }
                 // is built-in
                 css_def.body = self.resolve_internal_variant(css_def.body.as_str(), v)?;

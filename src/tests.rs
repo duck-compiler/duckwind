@@ -1,4 +1,4 @@
-use crate::{escape_string_for_css, EmitEnv};
+use crate::{EmitEnv, escape_string_for_css};
 
 #[test]
 fn test_css_escape() {
