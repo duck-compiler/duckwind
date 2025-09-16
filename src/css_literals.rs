@@ -390,7 +390,7 @@ pub fn data_type_parser<'a>()
         absolute_size_parser().map(CssLiteral::AbsoluteSize),
         just("*").map(|_| CssLiteral::Any),
         any()
-            .filter(|c: &char| !c.is_ascii_punctuation() && !c.is_ascii_whitespace())
+            .filter(|c: &char| (!c.is_ascii_punctuation() && !c.is_ascii_whitespace()) || *c == '-')
             .repeated()
             .at_least(1)
             .collect::<String>()
@@ -718,10 +718,6 @@ mod tests {
                 .parse(src)
                 .into_result()
                 .expect(&format!("full parse error {src:?}"));
-
-            if src.starts_with("bottom") {
-                dbg!(&l);
-            }
 
             assert_eq!(l, expected, "error: {src:?}");
         }

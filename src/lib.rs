@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+
 use chumsky::{IterParser, Parser, error::Rich, extra, prelude::any};
 
 use crate::{
-    config_css::{Utility, Variant, config_parser},
+    config_css::{Theme, Utility, Variant, config_parser},
     lexer::{DWS, empty_span, lexer},
     parser::{ParsedUnit, duckwind_parser, make_eoi, make_input},
 };
@@ -18,12 +20,15 @@ const DEFAULT_CONFIG: &str = include_str!("css/default_config.css");
 const TEXT_COLOR_CONFIG: &str = include_str!("css/text_color.css");
 const TEXT_DECORATION_COLOR_CONFIG: &str = include_str!("css/text_decoration_color.css");
 const BG_COLOR_CONFIG: &str = include_str!("css/bg_color.css");
+const THEME_CONFIG: &str = include_str!("css/theme.css");
 
-pub fn ignore_whitespace<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
+pub fn ignore_whitespace<'a>()
+-> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     any().filter(|c: &char| *c == ' ').repeated().collect()
 }
 
-pub fn ignore_whitespace2<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
+pub fn ignore_whitespace2<'a>()
+-> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     any()
         .filter(|c: &char| c.is_whitespace())
         .repeated()
@@ -77,6 +82,7 @@ pub struct EmitEnv {
     pub defs: Vec<CssDef>,
     pub utilities: Vec<Utility>,
     pub variants: Vec<Variant>,
+    pub theme: Theme,
 }
 
 impl Default for EmitEnv {
@@ -86,6 +92,44 @@ impl Default for EmitEnv {
 }
 
 impl EmitEnv {
+    pub fn get_breakpoint_var(&self, name: &str) -> Option<String> {
+        Some(if let Some(val) = self.theme.vars.get(&format!("breakpoint-{name}")) {
+            val.to_string()
+        } else {
+            match name {
+                "sm" => "40rem",
+                "md" => "48rem",
+                "lg" => "64rem",
+                "xl" => "80rem",
+                "2xl" => "96rem",
+                _ => return None,
+            }.to_string()
+        })
+    }
+
+    pub fn get_container_breakpoint_var(&self, name: &str) -> Option<String> {
+        Some(if let Some(val) = self.theme.vars.get(&format!("container-{name}")) {
+            val.to_string()
+        } else {
+            match name {
+                "3xs" => "16rem",
+                "2xs" => "18rem",
+                "xs" => "20rem",
+                "sm" => "24rem",
+                "md" => "28rem",
+                "lg" => "32rem",
+                "xl" => "36rem",
+                "2xl" => "42rem",
+                "3xl" => "48rem",
+                "4xl" => "56rem",
+                "5xl" => "64rem",
+                "6xl" => "72rem",
+                "7xl" => "80rem",
+                _ => return None,
+            }.to_string()
+        })
+    }
+
     pub fn resolve_internal_variant(&self, body: &str, v: &[(ParsedUnit, DWS)]) -> Option<String> {
         Some(match &v[0].0 {
             ParsedUnit::String(s) => match s.as_str() {
@@ -308,11 +352,16 @@ impl EmitEnv {
             defs: Vec::new(),
             utilities: Vec::new(),
             variants: Vec::new(),
+            theme: Theme {
+                vars: HashMap::new(),
+                keyframes: HashMap::new(),
+            },
         };
         res.load_config(DEFAULT_CONFIG);
         res.load_config(TEXT_COLOR_CONFIG);
         res.load_config(TEXT_DECORATION_COLOR_CONFIG);
         res.load_config(BG_COLOR_CONFIG);
+        res.load_config(THEME_CONFIG);
         res
     }
 
@@ -323,6 +372,10 @@ impl EmitEnv {
             .expect("parse errors");
         self.utilities.extend(parsed_config.utilities);
         self.variants.extend(parsed_config.variants);
+        for theme in parsed_config.themes {
+            self.theme.vars.extend(theme.vars);
+            self.theme.keyframes.extend(theme.keyframes);
+        }
     }
 
     pub fn parse_tailwind_str(&mut self, src: &str) -> Option<CssDef> {
@@ -366,11 +419,22 @@ impl EmitEnv {
                     pre.push(last_str.clone());
                     let full = pre.join("-");
 
-                    println!("{:?}", self.utilities);
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == full.as_str()
                             && !utility.has_value
-                            && let Ok(res) = utility.instantiate(None, false)
+                            && let Ok(res) = utility.instantiate(&self.theme, None, false)
+                        {
+                            body_to_set = Some(res);
+                        }
+                    }
+                    for utility in self.utilities.iter() {
+                        if utility.has_value
+                            && full.starts_with(utility.name.as_str())
+                            && let Ok(res) = utility.instantiate(
+                                &self.theme,
+                                Some(&full[&utility.name.len()+1..]),
+                                false,
+                            )
                         {
                             body_to_set = Some(res);
                         }
@@ -379,7 +443,8 @@ impl EmitEnv {
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == pre_str.as_str()
                             && utility.has_value
-                            && let Ok(res) = utility.instantiate(Some(last_str.as_str()), false)
+                            && let Ok(res) =
+                                utility.instantiate(&self.theme, Some(last_str.as_str()), false)
                         {
                             body_to_set = Some(res);
                         }
@@ -395,7 +460,8 @@ impl EmitEnv {
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == pre_str.as_str()
                             && utility.has_value
-                            && let Ok(res) = utility.instantiate(Some(raw_value.as_str()), true)
+                            && let Ok(res) =
+                                utility.instantiate(&self.theme, Some(raw_value.as_str()), true)
                         {
                             body_to_set = Some(res);
                         }
@@ -511,7 +577,6 @@ impl EmitEnv {
                                     })
                                     .collect::<Vec<_>>()
                                     .join("-");
-                                dbg!(&joined);
                                 if let Some(variant) = self
                                     .variants
                                     .iter()

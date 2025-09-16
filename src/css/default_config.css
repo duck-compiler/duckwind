@@ -1,87 +1,17 @@
-@custom-variant 3xs (@media (width >= 16rem));
-@custom-variant 2xs (@media (width >= 18rem));
-@custom-variant xs (@media (width >= 20rem));
-@custom-variant sm (@media (width >= 24rem));
-@custom-variant md (@media (width >= 28rem));
-@custom-variant lg (@media (width >= 32rem));
-@custom-variant xl (@media (width >= 36rem));
-@custom-variant 2xl (@media (width >= 42rem));
-@custom-variant 3xl (@media (width >= 48rem));
-@custom-variant 4xl (@media (width >= 56rem));
-@custom-variant 5xl (@media (width >= 64rem));
-@custom-variant 6xl (@media (width >= 72rem));
-@custom-variant 7xl (@media (width >= 80rem));
-
-@custom-variant @3xs (@container (width >= 16rem));
-@custom-variant @2xs (@container (width >= 18rem));
-@custom-variant @xs (@container (width >= 20rem));
-@custom-variant @sm (@container (width >= 24rem));
-@custom-variant @md (@container (width >= 28rem));
-@custom-variant @lg (@container (width >= 32rem));
-@custom-variant @xl (@container (width >= 36rem));
-@custom-variant @2xl (@container (width >= 42rem));
-@custom-variant @3xl (@container (width >= 48rem));
-@custom-variant @4xl (@container (width >= 56rem));
-@custom-variant @5xl (@container (width >= 64rem));
-@custom-variant @6xl (@container (width >= 72rem));
-@custom-variant @7xl (@container (width >= 80rem));
-
 @custom-variant starting (@starting-style);
 
 @utility aspect-square {
     aspect-ratio: 1 / 1;
 }
-@utility aspect-video {
-    aspect-ratio: 16 / 9;
-}
 @utility aspect-auto {
     aspect-ratio: auto;
 }
 @utility aspect-* {
-    aspect-ratio: --value(ratio, [*]);
+    aspect-ratio: --value(--aspect-*, ratio, [*]);
 }
 
 @utility columns-* {
-    columns: --value(number);
-}
-@utility columns-3xs {
-    columns: 16rem;
-}
-@utility columns-2xs {
-    columns: 18rem;
-}
-@utility columns-xs {
-    columns: 20rem;
-}
-@utility columns-sm {
-    columns: 24rem;
-}
-@utility columns-md {
-    columns: 28rem;
-}
-@utility columns-lg {
-    columns: 32rem;
-}
-@utility columns-xl {
-    columns: 36rem;
-}
-@utility columns-2xl {
-    columns: 42rem;
-}
-@utility columns-3xl {
-    columns: 48rem;
-}
-@utility columns-4xl {
-    columns: 56rem;
-}
-@utility columns-5xl {
-    columns: 64rem;
-}
-@utility columns-6xl {
-    columns: 72rem;
-}
-@utility columns-7xl {
-    columns: 80rem;
+    columns: --value(--container-*, number);
 }
 @utility columns-auto {
     columns: auto;
@@ -660,47 +590,8 @@
 @utility basis-full {
     flex-basis: 100%;
 }
-@utility basis-auto {
-    flex-basis: auto;
-}
-@utility basis-3xs {
-    flex-basis: 16rem;
-}
-@utility basis-2xs {
-    flex-basis: 18rem;
-}
-@utility basis-xs {
-    flex-basis: 20rem;
-}
-@utility basis-sm {
-    flex-basis: 24rem;
-}
-@utility basis-md {
-    flex-basis: 28rem;
-}
-@utility basis-lg {
-    flex-basis: 32rem;
-}
-@utility basis-xl {
-    flex-basis: 36rem;
-}
-@utility basis-2xl {
-    flex-basis: 42rem;
-}
-@utility basis-3xl {
-    flex-basis: 48rem;
-}
-@utility basis-4xl {
-    flex-basis: 56rem;
-}
-@utility basis-5xl {
-    flex-basis: 64rem;
-}
-@utility basis-6xl {
-    flex-basis: 72rem;
-}
-@utility basis-7xl {
-    flex-basis: 80rem;
+@utility basis-* {
+    flex-basis: --value("auto", --container-*);
 }
 
 @utility flex-row {
@@ -2255,12 +2146,12 @@
 }
 
 @utility decoration-* {
-    text-decoration-thickness: --value(number)px;
+    text-decoration-thickness: --value(number) px;
     text-decoration-thickness: --value("from-font", "auto", [*]);
 }
 
 @utility underline-offset-* {
-    text-underline-offset: --value(number)px;
+    text-underline-offset: --value(number) px;
     text-underline-offset: --value("auto", [*]);
 }
 
@@ -2480,7 +2371,10 @@
 }
 
 @utility bg-linear-to-br {
-    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+    background-image: linear-gradient(
+        to bottom right,
+        var(--tw-gradient-stops)
+    );
 }
 
 @utility bg-linear-to-b {
@@ -2500,26 +2394,41 @@
 }
 
 @utility bg-linear-* {
-   background-image: linear-gradient(--value(angle, [*]) in oklab, var(--tw-gradient-stops));
+    background-image: linear-gradient(
+        --value(angle, [*]) in oklab,
+        var(--tw-gradient-stops)
+    );
 }
 
 @utility -bg-linear-* {
-   background-image: linear-gradient(---value(angle) in oklab, var(--tw-gradient-stops));
+    background-image: linear-gradient(
+        ---value(angle) in oklab,
+        var(--tw-gradient-stops)
+    );
 }
 
 @utility bg-radial {
     background-image: radial-gradient(in oklab, var(--tw-gradient-stops));
 }
 @utility bg-radial-* {
-    background-image: radial-gradient(--value([*]) in oklab, var(--tw-gradient-stops));
+    background-image: radial-gradient(
+        --value([*]) in oklab,
+        var(--tw-gradient-stops)
+    );
 }
 
 @utility bg-conic-* {
-    background-image: conic-gradient(from --value(angle, [*]) in oklab, var(--tw-gradient-stops));
+    background-image: conic-gradient(
+        from --value(angle, [*]) in oklab,
+        var(--tw-gradient-stops)
+    );
 }
 
 @utility -bg-conic-* {
-    background-image: conic-gradient(from ---value(angle) in oklab, var(--tw-gradient-stops));
+    background-image: conic-gradient(
+        from ---value(angle) in oklab,
+        var(--tw-gradient-stops)
+    );
 }
 
 @utility from-* {
@@ -2608,7 +2517,7 @@
 }
 
 @utility bg-no-repeat {
-    background-repeat: no-repeat
+    background-repeat: no-repeat;
 }
 
 @utility bg-auto {

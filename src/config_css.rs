@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use chumsky::{
     IterParser, Parser,
+    container::Seq,
     error::Rich,
     extra,
     input::Input,
@@ -39,6 +40,7 @@ pub struct Utility {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Theme {
     pub vars: HashMap<String, String>,
+    pub keyframes: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -51,6 +53,7 @@ pub enum UtilityInstantiationError {
 impl Utility {
     pub fn instantiate(
         &self,
+        theme: &Theme,
         value: Option<&str>,
         is_arb: bool,
     ) -> Result<String, UtilityInstantiationError> {
@@ -77,15 +80,15 @@ impl Utility {
 
         let literal = data_type_parser()
             .parse(value)
-            .into_result()
-            .expect("invalid literal");
+            .into_output()
+            .unwrap_or(CssLiteral::Other(value.to_string()));
 
         let mut i = 0;
         'outer: while i < self.parts.len() {
             let part = &self.parts[i];
             if let ParsedCodePart::ValueCall(call) = part {
                 for p in call.params.iter() {
-                    if p.literal_matches(&literal, is_arb) {
+                    if let Some(replacement) = p.literal_matches(theme, value, &literal, is_arb) {
                         let mut res_string = String::new();
 
                         if i > 0 {
@@ -107,12 +110,16 @@ impl Utility {
                                         }
                                     }
                                     ParsedCodePart::ValueCall(value_call) => {
-                                        if value_call
-                                            .params
-                                            .iter()
-                                            .any(|param| param.literal_matches(&literal, is_arb))
+                                        if let Some(replacement) =
+                                            value_call.params.iter().find_map(|param| {
+                                                param
+                                                    .literal_matches(theme, value, &literal, is_arb)
+                                            })
                                         {
-                                            res_string.insert_str(0, value);
+                                            res_string.insert_str(
+                                                0,
+                                                replacement.map(String::as_str).unwrap_or(value),
+                                            );
                                         } else {
                                             continue 'outer;
                                         }
@@ -126,7 +133,7 @@ impl Utility {
                             }
                         }
 
-                        res_string.push_str(value);
+                        res_string.push_str(replacement.map(String::as_str).unwrap_or(value));
 
                         // Find end of line
                         let mut i_forward = i + 1;
@@ -146,12 +153,14 @@ impl Utility {
                                     }
                                 }
                                 ParsedCodePart::ValueCall(value_call) => {
-                                    if value_call
-                                        .params
-                                        .iter()
-                                        .any(|param| param.literal_matches(&literal, is_arb))
+                                    if let Some(replacement) =
+                                        value_call.params.iter().find_map(|param| {
+                                            param.literal_matches(theme, value, &literal, is_arb)
+                                        })
                                     {
-                                        res_string.push_str(value);
+                                        res_string.push_str(
+                                            replacement.map(String::as_str).unwrap_or(value),
+                                        );
                                     } else {
                                         continue 'outer;
                                     }
@@ -215,18 +224,35 @@ pub enum ValueUsage {
 }
 
 impl ValueUsage {
-    pub fn literal_matches(&self, css_literal_src: &CssLiteral, is_arb: bool) -> bool {
+    pub fn literal_matches<'a>(
+        &self,
+        theme: &'a Theme,
+        value: &str,
+        css_literal_src: &CssLiteral,
+        is_arb: bool,
+    ) -> Option<Option<&'a String>> {
         match self {
-            ValueUsage::Type(t) if !is_arb => t.css_literal_matches(css_literal_src),
-            ValueUsage::ArbType(t) if is_arb => t.css_literal_matches(css_literal_src),
+            ValueUsage::Type(t) if !is_arb && t.css_literal_matches(css_literal_src) => Some(None),
+            ValueUsage::ArbType(t) if is_arb && t.css_literal_matches(css_literal_src) => {
+                Some(None)
+            }
             ValueUsage::Literal(s) => {
-                if let CssLiteral::Other(x) = css_literal_src {
-                    x == s
+                if let CssLiteral::Other(x) = css_literal_src
+                    && x == s
+                {
+                    Some(None)
                 } else {
-                    false
+                    None
                 }
             }
-            _ => false,
+            ValueUsage::Var(var) => {
+                if let Some(value) = theme.vars.get(&format!("{var}{value}")) {
+                    Some(Some(value))
+                } else {
+                    None
+                }
+            }
+            _ => None,
         }
     }
 }
@@ -465,33 +491,80 @@ pub fn parse_var<'a>()
         .then_ignore(just(";"))
 }
 
+pub fn keyframes_text_parser<'a>()
+-> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
+    recursive(|e| {
+        just("{")
+            .ignore_then(
+                choice((
+                    just("{").rewind().ignore_then(e.clone()),
+                    any().and_is(just("}").not()).map(|x| String::from(x)),
+                ))
+                .repeated()
+                .collect::<Vec<_>>()
+                .map(|v| v.join("")),
+            )
+            .then_ignore(just("}"))
+            .map(|parsed| format!("{{{parsed}}}"))
+    })
+}
+
+pub fn parse_keyframes<'a>()
+-> impl Parser<'a, &'a str, (String, String), extra::Err<Rich<'a, char>>> + Clone {
+    just("@keyframes")
+        .ignore_then(ignore_whitespace2())
+        .ignore_then(parse_utility_name())
+        .ignore_then(ignore_whitespace2())
+        .then(keyframes_text_parser())
+}
+
 pub fn parse_theme<'a>() -> impl Parser<'a, &'a str, Theme, extra::Err<Rich<'a, char>>> + Clone {
+    #[derive(Debug, Clone, PartialEq)]
+    enum ParseUnit {
+        Variable(String, String),
+        Keyframes(String, String),
+    }
     just("@theme")
         .ignore_then(ignore_whitespace())
         .ignore_then(just("{"))
         .ignore_then(ignore_whitespace2())
         .ignore_then(
-            ignore_whitespace2()
-                .ignore_then(parse_var())
-                .then_ignore(ignore_whitespace2())
-                .repeated()
-                .collect::<Vec<_>>(),
+            choice((
+                parse_var().map(|(var_name, var_value)| ParseUnit::Variable(var_name, var_value)),
+                parse_keyframes().map(|(keyframes_name, keyframes_src)| {
+                    ParseUnit::Keyframes(keyframes_name, keyframes_src)
+                }),
+            ))
+            .padded()
+            .repeated()
+            .collect::<Vec<_>>(),
         )
         .then_ignore(ignore_whitespace2())
         .then_ignore(just("}"))
         .then_ignore(ignore_whitespace2())
         .map(|vars| {
-            let vars = vars
-                .into_iter()
-                .fold(HashMap::new(), |mut acc, (key, val)| {
-                    acc.insert(key, val);
+            vars.into_iter().fold(
+                Theme {
+                    vars: HashMap::new(),
+                    keyframes: HashMap::new(),
+                },
+                |mut acc, unit| {
+                    match unit {
+                        ParseUnit::Variable(var_name, var_value) => {
+                            acc.vars.insert(var_name, var_value);
+                        }
+                        ParseUnit::Keyframes(keyframes_name, keyframes_value) => {
+                            acc.keyframes.insert(keyframes_name, keyframes_value);
+                        }
+                    }
                     acc
-                });
-            Theme { vars }
+                },
+            )
         })
 }
 
-pub fn parse_utility_name<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
+pub fn parse_utility_name<'a>()
+-> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     any()
         .filter(|c: &char| {
             c.is_ascii_alphanumeric() || *c == '*' || *c == '/' || *c == '@' || *c == '-'
