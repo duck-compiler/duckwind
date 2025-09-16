@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use chumsky::{
     IterParser, Parser,
     error::Rich,
@@ -32,6 +34,11 @@ pub struct Utility {
     pub name: String,
     pub parts: Vec<ParsedCodePart>,
     pub has_value: bool,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Theme {
+    pub vars: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -204,6 +211,7 @@ pub enum ValueUsage {
     Type(ValueType),
     ArbType(ValueType),
     Literal(String),
+    Var(String),
 }
 
 impl ValueUsage {
@@ -228,8 +236,8 @@ pub struct ValueCall {
     params: Vec<ValueUsage>,
 }
 
-pub fn parse_css_data_type<'a>() -> impl Parser<'a, &'a str, ValueType, extra::Err<Rich<'a, char>>> + Clone
-{
+pub fn parse_css_data_type<'a>()
+-> impl Parser<'a, &'a str, ValueType, extra::Err<Rich<'a, char>>> + Clone {
     choice((
         just("length").map(|_| ValueType::Length),
         just("percentage").map(|_| ValueType::Percentage),
@@ -257,8 +265,18 @@ pub fn parse_literal<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'
         .then_ignore(just("\""))
 }
 
-pub fn parse_value_param<'a>() -> impl Parser<'a, &'a str, ValueUsage, extra::Err<Rich<'a, char>>> + Clone {
+pub fn parse_value_param<'a>()
+-> impl Parser<'a, &'a str, ValueUsage, extra::Err<Rich<'a, char>>> + Clone {
     choice((
+        just("--").ignore_then(
+            any()
+                .filter(|c: &char| c.is_alphanumeric() || *c == '-')
+                .repeated()
+                .at_least(1)
+                .collect::<String>()
+                .then_ignore(just("*"))
+                .map(ValueUsage::Var),
+        ),
         parse_css_data_type().map(ValueUsage::Type),
         just("[")
             .ignore_then(parse_css_data_type())
@@ -268,7 +286,8 @@ pub fn parse_value_param<'a>() -> impl Parser<'a, &'a str, ValueUsage, extra::Er
     ))
 }
 
-pub fn parse_value_call<'a>() -> impl Parser<'a, &'a str, ValueCall, extra::Err<Rich<'a, char>>> + Clone {
+pub fn parse_value_call<'a>()
+-> impl Parser<'a, &'a str, ValueCall, extra::Err<Rich<'a, char>>> + Clone {
     just("--value")
         .ignore_then(just("("))
         .ignore_then(
@@ -296,6 +315,7 @@ pub enum ParsedCodePart {
 pub enum ConfigUnit {
     Utility(Utility),
     Variant(Variant),
+    Theme(Theme),
 }
 
 // pub fn parse_nested_utility_code<'a>()
@@ -421,6 +441,56 @@ pub fn variant_parser<'a>() -> impl Parser<'a, &'a str, Variant, extra::Err<Rich
     ))
 }
 
+pub fn parse_var<'a>()
+-> impl Parser<'a, &'a str, (String, String), extra::Err<Rich<'a, char>>> + Clone {
+    just("--")
+        .ignore_then(
+            any()
+                .filter(|c: &char| c.is_alphanumeric() || *c == '-')
+                .repeated()
+                .at_least(1)
+                .collect::<String>(),
+        )
+        .then_ignore(ignore_whitespace())
+        .then_ignore(just(":"))
+        .then_ignore(ignore_whitespace())
+        .then(
+            any()
+                .and_is(just(";").not())
+                .filter(|c: &char| *c == ' ' || !c.is_whitespace())
+                .repeated()
+                .at_least(1)
+                .collect::<String>(),
+        )
+        .then_ignore(just(";"))
+}
+
+pub fn parse_theme<'a>() -> impl Parser<'a, &'a str, Theme, extra::Err<Rich<'a, char>>> + Clone {
+    just("@theme")
+        .ignore_then(ignore_whitespace())
+        .ignore_then(just("{"))
+        .ignore_then(ignore_whitespace2())
+        .ignore_then(
+            ignore_whitespace2()
+                .ignore_then(parse_var())
+                .then_ignore(ignore_whitespace2())
+                .repeated()
+                .collect::<Vec<_>>(),
+        )
+        .then_ignore(ignore_whitespace2())
+        .then_ignore(just("}"))
+        .then_ignore(ignore_whitespace2())
+        .map(|vars| {
+            let vars = vars
+                .into_iter()
+                .fold(HashMap::new(), |mut acc, (key, val)| {
+                    acc.insert(key, val);
+                    acc
+                });
+            Theme { vars }
+        })
+}
+
 pub fn parse_utility_name<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> {
     any()
         .filter(|c: &char| {
@@ -439,12 +509,14 @@ pub fn parse_utility_name<'a>() -> impl Parser<'a, &'a str, String, extra::Err<R
 pub struct UserConfig {
     pub utilities: Vec<Utility>,
     pub variants: Vec<Variant>,
+    pub themes: Vec<Theme>,
 }
 
 pub fn config_parser<'a>() -> impl Parser<'a, &'a str, UserConfig, extra::Err<Rich<'a, char>>> {
     choice((
         parse_utility().map_with(|x, e| (ConfigUnit::Utility(x), e.span())),
         variant_parser().map_with(|x, e| (ConfigUnit::Variant(x), e.span())),
+        parse_theme().map_with(|x, e| (ConfigUnit::Theme(x), e.span())),
     ))
     .padded()
     .repeated()
@@ -453,6 +525,7 @@ pub fn config_parser<'a>() -> impl Parser<'a, &'a str, UserConfig, extra::Err<Ri
         let mut res = UserConfig {
             utilities: Vec::new(),
             variants: Vec::new(),
+            themes: Vec::new(),
         };
 
         for (v, span) in v {
@@ -464,6 +537,7 @@ pub fn config_parser<'a>() -> impl Parser<'a, &'a str, UserConfig, extra::Err<Ri
                     }
                     res.variants.push(v);
                 }
+                ConfigUnit::Theme(v) => res.themes.push(v),
             }
         }
 
@@ -500,8 +574,6 @@ pub fn parse_utility<'a>() -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<
         .then_ignore(ignore_whitespace())
         .then_ignore(just("{"))
         .then(parse_utility_text())
-        .then_ignore(ignore_whitespace())
-        // .then_ignore(just("}"))
         .map(|(name, content)| {
             let mut parts = Vec::new();
             let mut buf = String::new();
@@ -541,7 +613,7 @@ pub fn parse_utility<'a>() -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<
 mod tests {
     use chumsky::Parser;
 
-    use crate::config_css::{config_parser, parse_utility, variant_parser};
+    use crate::config_css::{config_parser, parse_theme, parse_utility, variant_parser};
 
     #[test]
     fn test_utility_parser() {
@@ -573,7 +645,14 @@ mod tests {
     fn test_parse_config() {
         // text-[100]
 
-        let src = r#"@utility test1 { text-size: 30rem; }
+        let src = r#"
+
+            @utility test1 { text-size: 30rem; }
+
+@theme {
+    --abc-2: 123;
+    --xyz-200: 123;
+}
 
             @utility test2-* {
                 text-size: --value(length);
@@ -590,5 +669,14 @@ mod tests {
         // dbg!(util.instantiate(Some("lit")));
         dbg!(util);
         assert!(false);
+    }
+
+    #[test]
+    fn test_theme_parser() {
+        let src = r#"@theme { --text-size-2: 2em; --text-size-4: 9em;
+            --color-mint-500: rgb(1,   2,   3);
+            }"#;
+        dbg!(parse_theme().parse(src).into_result());
+        panic!();
     }
 }
