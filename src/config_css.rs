@@ -220,7 +220,7 @@ pub enum ValueUsage {
     Type(ValueType),
     ArbType(ValueType),
     Literal(String),
-    Var(String),
+    Var(String, usize),
 }
 
 impl ValueUsage {
@@ -245,8 +245,10 @@ impl ValueUsage {
                     None
                 }
             }
-            ValueUsage::Var(var) => {
-                if let Some(value) = theme.vars.get(&format!("{var}{value}")) {
+            ValueUsage::Var(var, to_insert) => {
+                let mut to_check = var.clone();
+                to_check.insert_str(*to_insert, value);
+                if let Some(value) = theme.vars.get(to_check.as_str()) {
                     Some(Some(value))
                 } else {
                     None
@@ -293,15 +295,37 @@ pub fn parse_literal<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'
 
 pub fn parse_value_param<'a>()
 -> impl Parser<'a, &'a str, ValueUsage, extra::Err<Rich<'a, char>>> + Clone {
+    #[derive(Debug, Clone, PartialEq)]
+    enum ParseUnit {
+        Char(char),
+        Target(usize),
+    }
     choice((
         just("--").ignore_then(
-            any()
-                .filter(|c: &char| c.is_alphanumeric() || *c == '-')
-                .repeated()
-                .at_least(1)
-                .collect::<String>()
-                .then_ignore(just("*"))
-                .map(ValueUsage::Var),
+            choice((
+                just("*").map_with(|_, e| {
+                    let x: <&'static str as Input<'static>>::Span = e.span();
+                    dbg!(ParseUnit::Target(x.start))
+                }),
+                any()
+                    .filter(|c: &char| c.is_alphanumeric() || *c == '-')
+                    .map(ParseUnit::Char),
+            ))
+            .repeated()
+            .collect::<Vec<_>>()
+            .filter(|v| v.iter().any(|elem| matches!(elem, ParseUnit::Target(..))))
+            .map_with(|x, e| {
+                let span: <&'static str as Input<'static>>::Span = e.span();
+                let mut target_idx = None;
+                let text = x.iter().fold(String::new(), |mut acc, elem| {
+                    match elem {
+                        ParseUnit::Char(c) => acc.push(*c),
+                        ParseUnit::Target(idx) => target_idx = Some(*idx - span.start),
+                    }
+                    acc
+                });
+                dbg!(ValueUsage::Var(text, target_idx.unwrap()))
+            }),
         ),
         parse_css_data_type().map(ValueUsage::Type),
         just("[")
@@ -719,20 +743,8 @@ mod tests {
         // text-[100]
 
         let src = r#"
-
-            @utility test1 { text-size: 30rem; }
-
-@theme {
-    --abc-2: 123;
-    --xyz-200: 123;
-}
-
-            @utility test2-* {
-                text-size: --value(length);
-            }
-
-            @custom-variant abc {@slot;}
-            @custom-variant abc {@media(hover: hover){&:hover{ @slot;}}}
+            @utility test1 { text-size: --value(--text-*abc); }
+            @utility test2 { text-size: --value(--text-*abc); }
         "#;
 
         let util = config_parser()

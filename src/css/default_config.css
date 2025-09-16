@@ -1655,10 +1655,6 @@
     font-family: --value(--font-*, [*]);
 }
 
-@utility text-xs {
-    font-size: var(--text-xs);
-    line-height: var(--text-xs--line-height);
-}
 @utility text-* {
     font-size: --value(--text-*); line-height: --value(--text-*--line-height);
     font-size: --value(length, [length]);
