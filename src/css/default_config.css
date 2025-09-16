@@ -1658,6 +1658,7 @@
 @utility text-* {
     font-size: --value(--text-*); line-height: --value(--text-*--line-height);
     font-size: --value(length, [length]);
+    color: --value(color, [color], --color-*);
 }
 
 @utility antialiased {
@@ -1819,10 +1820,7 @@
 }
 
 @utility line-clamp-* {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: --value(number, [*]);
+    overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: --value(number, [*]);
 }
 
 @utility line-clamp-none {
@@ -1918,8 +1916,9 @@
 }
 
 @utility decoration-* {
-    text-decoration-thickness: --value(number) px;
+    text-decoration-thickness: --value(number, [number])px;
     text-decoration-thickness: --value("from-font", "auto", [*]);
+    text-decoration-color: --value(color, [color], --color-*)
 }
 
 @utility underline-offset-* {
@@ -2123,6 +2122,7 @@
 }
 
 @utility bg-* {
+    background-color: --value(color, [color], --color-*);
     background-image: --value([*]);
 }
 
@@ -2306,4 +2306,154 @@
 
 @utility bg-size-* {
     background-size: --value([*]);
+}
+
+@utility rounded-* {
+    border-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-none {
+    border-radius: 0;
+}
+@utility rounded-full {
+    border-radius: calc(infinity * 1px);
+}
+
+@utility rounded-s-* {
+    border-start-start-radius: --value(length, [length], --radius-*, [*]); border-end-start-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-s-none {
+    border-start-start-radius: 0; border-end-start-radius: 0;
+}
+@utility rounded-s-full {
+    border-start-start-radius: calc(infinity * 1px); border-end-start-radius: calc(infinity * 1px);
+}
+
+@utility rounded-e-* {
+    border-start-end-radius: --value(length, [length], --radius-*, [*]); border-end-end-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-e-none {
+    border-start-end-radius: 0; border-end-end-radius: 0;
+}
+@utility rounded-e-full {
+    border-start-end-radius: calc(infinity * 1px); border-end-end-radius: calc(infinity * 1px);
+}
+
+@utility rounded-t-* {
+    border-top-left-radius: --value(length, [length], --radius-*, [*]); border-top-right-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-t-none {
+    border-top-left-radius: 0; border-top-right-radius: 0;
+}
+@utility rounded-t-full {
+    border-top-left-radius: calc(infinity * 1px); border-top-right-radius: calc(infinity * 1px);
+}
+
+@utility rounded-r-* {
+    border-top-right-radius: --value(length, [length], --radius-*, [*]); border-bottom-right-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-r-none {
+    border-top-right-radius: 0; border-bottom-right-radius: 0;
+}
+@utility rounded-r-full {
+    border-top-right-radius: calc(infinity * 1px); border-bottom-right-radius: calc(infinity * 1px);
+}
+
+@utility rounded-r-* {
+    border-bottom-right-radius: --value(length, [length], --radius-*, [*]); border-bottom-left-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-r-none {
+    border-bottom-right-radius: 0; border-bottom-left-radius: 0;
+}
+@utility rounded-r-full {
+    border-bottom-right-radius: calc(infinity * 1px); border-bottom-left-radius: calc(infinity * 1px);
+}
+
+@utility rounded-l-* {
+    border-top-left-radius: --value(length, [length], --radius-*, [*]); border-bottom-left-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-l-none {
+    border-top-left-radius: 0; border-bottom-left-radius: 0;
+}
+@utility rounded-l-full {
+    border-top-left-radius: calc(infinity * 1px); border-bottom-left-radius: calc(infinity * 1px);
+}
+
+@utility rounded-ss-* {
+    border-start-start-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-ss-none {
+    border-start-start-radius: 0;
+}
+@utility rounded-ss-full {
+    border-start-start-radius: calc(infinity * 1px);
+}
+
+@utility rounded-se-* {
+    border-start-end-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-se-none {
+    border-start-end-radius: 0;
+}
+@utility rounded-se-full {
+    border-start-end-radius: calc(infinity * 1px);
+}
+
+@utility rounded-ee-* {
+    border-end-end-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-ee-none {
+    border-end-end-radius: 0;
+}
+@utility rounded-ee-full {
+    border-end-end-radius: calc(infinity * 1px);
+}
+
+@utility rounded-es-* {
+    border-end-start-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-es-none {
+    border-end-start-radius: 0;
+}
+@utility rounded-es-full {
+    border-end-start-radius: calc(infinity * 1px);
+}
+
+@utility rounded-tl-* {
+    border-top-left-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-tl-none {
+    border-top-left-radius: 0;
+}
+@utility rounded-tl-full {
+    border-top-left-radius: calc(infinity * 1px);
+}
+
+@utility rounded-tr-* {
+    border-top-right-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-tr-none {
+    border-top-right-radius: 0;
+}
+@utility rounded-tr-full {
+    border-top-right-radius: calc(infinity * 1px);
+}
+
+@utility rounded-br-* {
+    border-bottom-right-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-br-none {
+    border-bottom-right-radius: 0;
+}
+@utility rounded-br-full {
+    border-bottom-right-radius: calc(infinity * 1px);
+}
+
+@utility rounded-bl-* {
+    border-bottom-left-radius: --value(length, [length], --radius-*, [*]);
+}
+@utility rounded-bl-none {
+    border-bottom-left-radius: 0;
+}
+@utility rounded-bl-full {
+    border-bottom-left-radius: calc(infinity * 1px);
 }

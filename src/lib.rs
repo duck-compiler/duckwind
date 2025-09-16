@@ -358,9 +358,9 @@ impl EmitEnv {
             },
         };
         res.load_config(DEFAULT_CONFIG);
-        res.load_config(TEXT_COLOR_CONFIG);
-        res.load_config(TEXT_DECORATION_COLOR_CONFIG);
-        res.load_config(BG_COLOR_CONFIG);
+        // res.load_config(TEXT_COLOR_CONFIG);
+        // res.load_config(TEXT_DECORATION_COLOR_CONFIG);
+        // res.load_config(BG_COLOR_CONFIG);
         res.load_config(THEME_CONFIG);
         res
     }
