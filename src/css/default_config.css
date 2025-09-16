@@ -2457,3 +2457,363 @@
 @utility rounded-bl-full {
     border-bottom-left-radius: calc(infinity * 1px);
 }
+
+@utility border {
+    border-width: 1px;
+}
+
+@utility border-* {
+    border-width: --value(number)px;
+    border-width: --value([*]);
+}
+
+@utility border-x {
+    border-inline-width: 1px;
+}
+
+@utility border-x-* {
+    border-inline-width: --value(number)px;
+    border-inline-width: --value([*]);
+}
+
+@utility border-y {
+    border-block-width: 1px;
+}
+
+@utility border-y-* {
+    border-block-width: --value(number)px;
+    border-block-width: --value([*]);
+}
+
+@utility border-s {
+    border-inline-start-width: 1px;
+}
+
+@utility border-s-* {
+    border-inline-start-width: --value(number)px;
+    border-inline-start-width: --value([*]);
+}
+
+@utility border-e {
+    border-inline-end-width: 1px;
+}
+
+@utility border-e-* {
+    border-inline-end-width: --value(number)px;
+    border-inline-end-width: --value([*]);
+}
+
+@utility border-t {
+    border-top-width: 1px;
+}
+
+@utility border-t-* {
+    border-top-width: --value(number)px;
+    border-top-width: --value([*]);
+}
+
+@utility border-r {
+    border-right-width: 1px;
+}
+
+@utility border-r-* {
+    border-right-width: --value(number)px;
+    border-right-width: --value([*]);
+}
+
+@utility border-b {
+    border-bottom-width: 1px;
+}
+
+@utility border-b-* {
+    border-bottom-width: --value(number)px;
+    border-bottom-width: --value([*]);
+}
+
+@utility border-l {
+    border-left-width: 1px;
+}
+
+@utility border-l-* {
+    border-left-width: --value(number)px;
+    border-left-width: --value([*]);
+}
+
+@utility divide-x { & > :not(:last-child) { border-inline-start-width: 0px; border-inline-end-width: 1px; } }
+@utility divide-x-* {
+    & > :not(:last-child) { border-inline-start-width: 0px; border-inline-end-width: --value(number)px; }
+    & > :not(:last-child) { border-inline-start-width: 0px; border-inline-end-width: --value([*]); }
+}
+
+@utility divide-y { & > :not(:last-child) { border-top-width: 0px; border-bottom-width: 1px; } }
+@utility divide-y-* {
+    & > :not(:last-child) { border-top-width: 0px; border-bottom-width: --value(number)px; }
+    & > :not(:last-child) { border-top-width: 0px; border-bottom-width: --value([*]); }
+}
+
+@utility divide-x-reverse {
+    --tw-divide-x-reverse: 1;
+}
+
+@utility divide-y-reverse {
+    --tw-divide-y-reverse: 1;
+}
+
+@utility border-* {
+    border-color: --value(color, [color], --color-*);
+}
+
+@utility border-x-* {
+    border-inline-color: --value(color, [color], --color-*);
+}
+
+@utility border-y-* {
+    border-block-color: --value(color, [color], --color-*);
+}
+
+@utility border-s-* {
+    border-inline-start-color: --value(color, [color], --color-*);
+}
+
+@utility border-e-* {
+    border-inline-end-color: --value(color, [color], --color-*);
+}
+
+@utility border-t-* {
+    border-top-color: --value(color, [color], --color-*);
+}
+
+@utility border-r-* {
+    border-right-color: --value(color, [color], --color-*);
+}
+
+@utility border-b-* {
+    border-bottom-color: --value(color, [color], --color-*);
+}
+
+@utility border-l-* {
+    border-left-color: --value(color, [color], --color-*);
+}
+
+@utility divide-* {
+    & > :not(:last-child) { border-color: --value(color, [color], --color-*); }
+}
+
+@utility border-solid {
+    border-style: solid;
+}
+
+@utility border-dashed {
+    border-style: dashed;
+}
+
+@utility border-dotted {
+    border-style: dotted;
+}
+
+@utility border-double {
+    border-style: double;
+}
+
+@utility border-hidden {
+    border-style: hidden;
+}
+
+@utility border-none {
+    border-style: none;
+}
+
+@utility divide-solid {
+    & > :not(:last-child) {
+        border-style: solid;
+    }
+}
+
+@utility divide-dashed {
+    & > :not(:last-child) {
+        border-style: dashed;
+    }
+}
+
+@utility divide-dotted {
+    & > :not(:last-child) {
+        border-style: dotted;
+    }
+}
+
+@utility divide-double {
+    & > :not(:last-child) {
+        border-style: double;
+    }
+}
+
+@utility divide-hidden {
+    & > :not(:last-child) {
+        border-style: hidden;
+    }
+}
+
+@utility divide-none {
+    & > :not(:last-child) {
+        border-style: none;
+    }
+}
+
+@utility outline {
+    outline-width: 1px;
+}
+
+@utility outline-* {
+    outline-width: --value(number)px;
+    outline-width: --value([*]);
+    outline-color: --value(color, [color], --color-*);
+}
+
+@utility outline-solid {
+    outline-style: solid;
+}
+
+@utility outline-dashed {
+    outline-style: dashed;
+}
+
+@utility outline-dotted {
+    outline-style: dotted;
+}
+
+@utility outline-double {
+    outline-style: double;
+}
+
+@utility outline-hidden {
+    outine: 2px solid transparent;
+    outline-offset: 2px;
+}
+
+@utility outline-none {
+    outline-style: none;
+}
+
+@utility outline-offset-* {
+    outline-offset: --value(number)px;
+    outline-offset: --value([*]);
+}
+
+@utility -outline-offset-* {
+    outline-offset: ---value(number)px;
+}
+
+@utility shadow-none {
+    box-shadow: 0 0 #0000;
+}
+
+@utility shadow-* {
+    box-shadow: --value(--shadow-*, [*]);
+    --tw-shadow-color: --value(--color-*);
+}
+
+@utility inset-shadow-none {
+    box-shadow: 0 0 #0000;
+}
+
+@utility inset-shadow-* {
+    box-shadow: --value(--inset-shadow-*, [*]);
+    --tw-inset-shadow-color: --value(--color-*);
+}
+
+@utility ring {
+    --tw-ring-shadow: 0 0 0 1px;
+}
+
+@utility ring-* {
+    --tw-ring-shadow: 0 0 0 --value(number)px;
+    --tw-ring-shadow: 0 0 0 --value([*]);
+    --tw-ring-color: --value(--color-*);
+}
+
+@utility inset-ring {
+    --tw-ring-shadow: 0 0 0 1px;
+}
+
+@utility inset-ring-* {
+    --tw-inset-ring-shadow: 0 0 0 --value(number)px;
+    --tw-inset-ring-shadow: 0 0 0 --value([*]);
+    --tw-inset-ring-color: --value(--color-*);
+}
+
+@utility text-shadow-none {
+    text-shadow: none;
+}
+
+@utility text-shadow-* {
+    text-shadow: --value(--text-shadow-*, [*]);
+    --tw-shadow-color: --value(color);
+}
+
+@utility opacity-* {
+    opacity: --value(number)%;
+    opacity: --value([*]);
+}
+
+@utility mix-blend-* {
+    mix-blend-mode: --value("normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "hue", "saturation", "color", "luminosity", "plus-darker", "plus-lighter");
+}
+
+@utility bg-blend-* {
+    background-blend-mode: --value("normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "hue", "saturation", "color", "luminosity");
+}
+
+@utility mask-clip-border {
+    mask-clip: border-box;
+}
+
+@utility mask-clip-padding {
+    mask-clip: padding-box;
+}
+
+@utility mask-clip-content {
+    mask-clip: content-box;
+}
+
+@utility mask-clip-fill {
+    mask-clip: fill-box;
+}
+
+@utility mask-clip-stroke {
+    mask-clip: stroke-box;
+}
+
+@utility mask-clip-view {
+    mask-clip: view-box;
+}
+
+@utility mask-no-clip {
+    mask-clip: no-clip;
+}
+
+@utility mask-add {
+    mask-composite: add;
+}
+
+@utility mask-subtract {
+    mask-composite: subtract;
+}
+
+@utility mask-intersect {
+    mask-composite: intersect;
+}
+
+@utility mask-exclude {
+    mask-composite: exclude;
+}
+
+@utility mask-* {
+    mask-image: --value("none", [*]);
+}
+
+@utility mask-linear-* {
+   mask-image: linear-gradient(--value(number)deg, black var(--tw-mask-linear-from), transparent var(--tw-mask-linear-to));
+}
+@utility -mask-linear-* {
+   mask-image: linear-gradient(calc(--value(number)deg * -1), black var(--tw-mask-linear-from), transparent var(--tw-mask-linear-to));
+}
