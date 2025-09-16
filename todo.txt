@@ -1,4 +1,4 @@
-- theme vars
+- theme vars (erledigt)
     - 3xl vars
     - spacing var
     - font vars

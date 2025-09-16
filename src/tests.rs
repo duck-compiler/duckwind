@@ -1,4 +1,4 @@
-use crate::{EmitEnv, escape_string_for_css};
+use crate::{escape_string_for_css, EmitEnv, DEFAULT_CONFIG};
 
 #[test]
 fn test_css_escape() {
@@ -36,7 +36,8 @@ fn test_css_def() {
     dbg!(&emit_env.variants);
 
     let test_cases = vec![
-        ("basis-auto", "a"),
+        ("text-xs", "a"),
+        ("min-w-3xl", "a"),
         ("text-[red]", "a"),
         ("abc-mint-500", "a"),
         ("@3xl:peer-not-has-focus-within:bg-red", "a"),
