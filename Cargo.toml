@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 chumsky = "0.10.1"
 clap = { version = "4.5.47", features = ["derive"] }
+notify = "8.1.0"
