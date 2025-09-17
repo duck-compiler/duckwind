@@ -495,6 +495,8 @@ impl EmitEnv {
                         css_def.pseudo_elements.push("backdrop".to_string());
                     } else {
                         match v_str.as_str() {
+                            "*" => css_def.body = format!("& > * {{\n{}\n}}", css_def.body),
+                            "**" => css_def.body = format!("& * {{\n{}\n}}", css_def.body),
                             "min" => {
                                 if let ParsedUnit::Raw(r) = &v[1].0 {
                                     css_def.body =
