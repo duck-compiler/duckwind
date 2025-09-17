@@ -1,9 +1,10 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Deref};
 
 use chumsky::{IterParser, Parser, error::Rich, extra, prelude::any};
 
 use crate::{
     config_css::{Theme, Utility, Variant, config_parser},
+    css_literals::{CssLiteral, data_type_parser},
     lexer::{DWS, empty_span, lexer},
     parser::{ParsedUnit, duckwind_parser, make_eoi, make_input},
 };
@@ -406,18 +407,90 @@ impl EmitEnv {
                     s
                 })
                 .collect::<Vec<_>>();
+            let pre_len = pre.len();
             let last = parsed.0.utility.last().cloned().unwrap();
             let pre_str = pre.join("-");
 
             match last.0 {
                 ParsedUnit::String(mut last_str) => {
-                    let mut after = None::<String>;
-                    if let Some((pre, opacity)) = last_str.split_once("/") {
-                        after = Some(opacity.to_string());
+                    let mut after = None;
+                    if let Some((pre, special_param)) = last_str.split_once("/") {
+                        #[derive(Debug, Clone)]
+                        enum WhatIsIt {
+                            Opacity(String),
+                            LineHeight(String),
+                            Undefined,
+                        }
+
+                        let mut what_is_it = WhatIsIt::Undefined;
+
+                        if pre_str.starts_with("text") {
+                            if self.theme.vars.contains_key(dbg!(&format!(
+                                "text{}{}",
+                                if pre_len > 1 { "" } else { "-" },
+                                vec![&pre_str[4..], pre]
+                                    .iter()
+                                    .filter(|x| !x.is_empty())
+                                    .map(Deref::deref)
+                                    .collect::<Vec<_>>()
+                                    .join("-")
+                            ))) {
+                                if special_param.starts_with("[") && special_param.ends_with("]") {
+                                    what_is_it = WhatIsIt::LineHeight(
+                                        special_param[1..special_param.len() - 1].to_string(),
+                                    );
+                                } else {
+                                    what_is_it = WhatIsIt::LineHeight(format!(
+                                        "calc(var(--spacing) * {})",
+                                        special_param.to_string()
+                                    ));
+                                }
+                            }
+                        }
+
+                        if matches!(what_is_it, WhatIsIt::Undefined) {
+                            let idx = pre_str.find("-").unwrap_or(pre_str.len());
+                            let after_idx = &pre_str[idx..];
+                            if self.theme.vars.contains_key(dbg!(&format!(
+                                "color{}{}{}",
+                                after_idx,
+                                if after_idx.is_empty() { "" } else { "-" },
+                                pre
+                            ))) {
+                                what_is_it = WhatIsIt::Opacity(format!("{special_param}%"));
+                            } else {
+                                let css_literal = data_type_parser().parse(pre).into_output();
+                                dbg!(&css_literal);
+                                if let Some(css_literal) = css_literal {
+                                    if matches!(css_literal, CssLiteral::Number(..)) {
+                                        what_is_it = WhatIsIt::LineHeight(format!(
+                                            "calc(var(--spacing) * {})",
+                                            special_param.to_string()
+                                        ));
+                                    } else if matches!(css_literal, CssLiteral::Color(..)) {
+                                        what_is_it = WhatIsIt::Opacity(format!(
+                                            "{}%",
+                                            special_param.to_string()
+                                        ));
+                                    }
+                                }
+                            }
+                        }
+
+                        match what_is_it {
+                            WhatIsIt::Opacity(s) => {
+                                after = Some(("opacity", s.to_string()));
+                            }
+                            WhatIsIt::LineHeight(s) => {
+                                after = Some(("line-height", s.to_string()));
+                            }
+                            _ => {}
+                        }
                         last_str = pre.to_string();
                     }
                     pre.push(last_str.clone());
                     let full = pre.join("-");
+                    std::fs::write("a.txt", full.clone()).unwrap();
 
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == full.as_str()
@@ -427,6 +500,7 @@ impl EmitEnv {
                             body_to_set = Some(res);
                         }
                     }
+                    std::fs::write("b.txt", full.clone()).unwrap();
                     for utility in self.utilities.iter() {
                         if utility.has_value
                             && full.starts_with(utility.name.as_str())
@@ -440,6 +514,7 @@ impl EmitEnv {
                         }
                     }
 
+                    std::fs::write("c.txt", full.clone()).unwrap();
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == pre_str.as_str()
                             && utility.has_value
@@ -449,11 +524,12 @@ impl EmitEnv {
                             body_to_set = Some(res);
                         }
                     }
+                    std::fs::write("d.txt", full.clone()).unwrap();
 
-                    if let Some(after) = after
+                    if let Some((tag, after)) = after
                         && let Some(res) = body_to_set.as_mut()
                     {
-                        res.push_str(&format!("\nopacity: {after}%;"));
+                        res.push_str(&format!("\n{tag}: {after};"));
                     }
                 }
                 ParsedUnit::Raw(raw_value) => {

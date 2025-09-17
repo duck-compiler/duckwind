@@ -121,6 +121,7 @@ impl Utility {
                                                 replacement.map(String::as_str).unwrap_or(value),
                                             );
                                         } else {
+                                            i += 1;
                                             continue 'outer;
                                         }
                                     }
@@ -162,6 +163,7 @@ impl Utility {
                                             replacement.map(String::as_str).unwrap_or(value),
                                         );
                                     } else {
+                                        i += 1;
                                         continue 'outer;
                                     }
                                 }
