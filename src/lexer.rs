@@ -23,6 +23,7 @@ pub enum Token {
     Whitespace,
 }
 
+#[allow(dead_code)]
 pub fn token_to_empty_span(t: &mut Spanned<Token>) {
     *t = t.0.empty_span();
 }
@@ -39,6 +40,7 @@ pub fn empty_span() -> DWS {
 }
 
 impl Token {
+    #[allow(dead_code)]
     pub fn empty_span(&self) -> (Self, DWS) {
         (self.clone(), empty_span())
     }

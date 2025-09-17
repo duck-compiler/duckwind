@@ -9,9 +9,6 @@ use chumsky::{
 
 use crate::lexer::{Context, DWS, Spanned, Token};
 
-#[derive(Debug, Clone, Default)]
-pub struct Config {}
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum ParsedUnit {
     String(String),
@@ -22,12 +19,6 @@ pub enum ParsedUnit {
 pub struct Parsed {
     pub variants: Vec<Vec<Spanned<ParsedUnit>>>,
     pub utility: Vec<Spanned<ParsedUnit>>,
-}
-
-impl Parsed {
-    pub fn new(variants: Vec<Vec<Spanned<ParsedUnit>>>, utility: Vec<Spanned<ParsedUnit>>) -> Self {
-        Self { variants, utility }
-    }
 }
 
 pub fn make_eoi(file_name: &'static str, file_contents: &'static str) -> DWS {
@@ -99,77 +90,4 @@ where
         },
     })
     .map_with(|x, e| (x, e.span()))
-}
-
-#[cfg(test)]
-mod tests {
-    // use chumsky::Parser;
-
-    // use crate::{
-    //     lexer::{empty_span, lexer, token_to_empty_span},
-    //     parser::{Parsed, duckwind_parser, make_eoi, make_input},
-    // };
-
-    // #[test]
-    // fn test_parser() {
-    //     let test_cases = {
-    //         use crate::parser::ParsedUnit::*;
-    //         // vec![
-    //         //     ("bg-red", Parsed::new_empty(vec![], vec!["bg", "red"])),
-    //         //     (
-    //         //         "hover:bg-red",
-    //         //         Parsed::new_empty(vec!["hover"], vec!["bg", "red"]),
-    //         //     ),
-    //         //     (
-    //         //         "md:hover:bg-blue",
-    //         //         Parsed::new_empty(vec!["md", "hover"], vec!["bg", "blue"]),
-    //         //     ),
-    //         //     (
-    //         //         "md:[&:nth-child(-n+3)]:hover:bg-blue",
-    //         //         Parsed::new_e(
-    //         //             vec![
-    //         //                 String("md".to_string()),
-    //         //                 Raw("&:nth-child(-n+3)".to_string()),
-    //         //                 String("hover".to_string()),
-    //         //             ],
-    //         //             vec![String("bg".to_string()), String("blue".to_string())],
-    //         //         ),
-    //         //     ),
-    //         //     (
-    //         //         "md:[&:nth-child(-n+3)]:hover:one-two-[raw]",
-    //         //         Parsed::new(
-    //         //             vec![
-    //         //                 Raw("&:nth-child(-n+3)".to_string()),
-    //         //                 String("hover".to_string()),
-    //         //             ],
-    //         //             vec![
-    //         //                 String("one".to_string()),
-    //         //                 String("two".to_string()),
-    //         //                 Raw("raw".to_string()),
-    //         //             ],
-    //         //         ),
-    //         //     ),
-    //         // ]
-    //         vec![]
-    //     };
-
-    //     // for (src, expected) in test_cases {
-    //     //     let parser = lexer("test_file", src);
-    //     //     let mut result = parser
-    //     //         .parse(src)
-    //     //         .into_result()
-    //     //         .expect(&format!("errors lexing {src}"));
-    //     //     result.iter_mut().for_each(token_to_empty_span);
-    //     //     let mut result = duckwind_parser(make_input)
-    //     //         .parse(make_input(make_eoi("test_file", src), &result))
-    //     //         .into_result()
-    //     //         .expect(&format!("errors parsing {src}"));
-    //     result.1 = empty_span();
-    //     result.0.make_empty();
-    //     assert_eq!(
-    //         expected, result.0,
-    //         "{src} returned {result:?} and not {expected:?}"
-    //     );
-    // }
-    // // }
 }

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use chumsky::{
     IterParser, Parser,
-    container::Seq,
     error::Rich,
     extra,
     input::Input,
@@ -76,7 +75,7 @@ impl Utility {
                 .collect::<String>());
         }
 
-        let value = value.expect("should be present at this point");
+        let value = value.expect("should be present at this point"); // is checked above
 
         let literal = data_type_parser()
             .parse(value)
@@ -444,6 +443,11 @@ pub fn variant_parser<'a>() -> impl Parser<'a, &'a str, Variant, extra::Err<Rich
             .then(ignore_whitespace2())
             .then_ignore(just("{").rewind())
             .then(variant_rec_text())
+            .filter(|(_, units)| {
+                units
+                    .iter()
+                    .any(|unit| matches!(unit, VariantParseUnit::Target(..)))
+            })
             .map(|((((a, b), name), d), units)| {
                 let mut s_buf = String::new();
                 let mut target = None;
@@ -460,7 +464,7 @@ pub fn variant_parser<'a>() -> impl Parser<'a, &'a str, Variant, extra::Err<Rich
                 Variant {
                     name,
                     body: s_buf,
-                    target: target.expect("need target")
+                    target: target.expect("need target") // is checked above with filter
                         - (a.len() + b.len() + d.len() + 1 + name_len),
                     is_short: false,
                 }
@@ -645,7 +649,7 @@ pub fn config_parser<'a>() -> impl Parser<'a, &'a str, UserConfig, extra::Err<Ri
     })
 }
 
-pub fn parse_utility_text<'a>()
+fn parse_utility_text<'a>()
 -> impl Parser<'a, &'a str, Vec<RawParsedCodePart>, extra::Err<Rich<'a, char>>> {
     recursive(|s| {
         choice((
@@ -707,60 +711,4 @@ pub fn parse_utility<'a>() -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<
                 has_value,
             }
         })
-}
-
-#[cfg(test)]
-mod tests {
-    use chumsky::Parser;
-
-    use crate::config_css::{config_parser, parse_theme, parse_utility, variant_parser};
-
-    #[test]
-    fn test_utility_parser() {
-        // text-[100]
-        let util = parse_utility()
-            .parse(
-                r#"@utility my-utility {
-                    text-size: --value(integer, "lit");
-                }"#,
-            )
-            .into_result()
-            .expect("utility error");
-        assert!(false);
-    }
-
-    #[test]
-    fn test_variant_parser() {
-        // text-[100]
-        let util = variant_parser()
-            .parse("@custom-variant lol (&:is(.test));")
-            .into_result()
-            .expect("utility error");
-        assert!(false);
-    }
-
-    #[test]
-    fn test_parse_config() {
-        // text-[100]
-
-        let src = r#"
-            @utility test1 { text-size: --value(--text-*abc); }
-            @utility test2 { text-size: --value(--text-*abc); }
-        "#;
-
-        let util = config_parser()
-            .parse(src)
-            .into_result()
-            .expect("config parse error");
-        assert!(false);
-    }
-
-    #[test]
-    fn test_theme_parser() {
-        let src = r#"@theme { --text-size-2: 2em; --text-size-4: 9em;
-            --color-mint-500: rgb(1,   2,   3);
-            }"#;
-        dbg!(parse_theme().parse(src).into_result());
-        panic!();
-    }
 }

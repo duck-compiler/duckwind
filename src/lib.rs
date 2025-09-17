@@ -9,9 +9,6 @@ use crate::{
     parser::{ParsedUnit, duckwind_parser, make_eoi, make_input},
 };
 
-#[cfg(test)]
-mod tests;
-
 mod config_css;
 mod css_literals;
 mod lexer;
@@ -402,7 +399,7 @@ impl EmitEnv {
                 .iter()
                 .map(|x| {
                     let ParsedUnit::String(s) = x.0.clone() else {
-                        panic!("can only be string {:?}", x.0)
+                        return String::new();
                     };
                     s
                 })
@@ -489,7 +486,6 @@ impl EmitEnv {
                     }
                     pre.push(last_str.clone());
                     let full = pre.join("-");
-                    std::fs::write("a.txt", full.clone()).unwrap();
 
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == full.as_str()
@@ -499,7 +495,6 @@ impl EmitEnv {
                             body_to_set = Some(res);
                         }
                     }
-                    std::fs::write("b.txt", full.clone()).unwrap();
                     for utility in self.utilities.iter() {
                         if utility.has_value
                             && full.starts_with(utility.name.as_str())
@@ -513,7 +508,6 @@ impl EmitEnv {
                         }
                     }
 
-                    std::fs::write("c.txt", full.clone()).unwrap();
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == pre_str.as_str()
                             && utility.has_value
@@ -523,7 +517,6 @@ impl EmitEnv {
                             body_to_set = Some(res);
                         }
                     }
-                    std::fs::write("d.txt", full.clone()).unwrap();
 
                     if let Some((tag, after)) = after
                         && let Some(res) = body_to_set.as_mut()

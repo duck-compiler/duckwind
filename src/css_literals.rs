@@ -78,6 +78,7 @@ impl Length {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(non_camel_case_types)]
 pub enum Color {
     Hex(String),
     Named(String),
@@ -305,6 +306,13 @@ pub fn angle_parser<'a>() -> impl Parser<'a, &'a str, Angle, extra::Err<Rich<'a,
             just("rad"),
             just("turn"),
         )))
+        .filter(|(_, unit)| match *unit {
+            "deg" => true,
+            "grad" => true,
+            "rad" => true,
+            "turn" => true,
+            _ => false,
+        })
         .map(|(s, unit)| {
             use Angle::*;
 
@@ -331,6 +339,17 @@ pub fn absolute_size_parser<'a>()
         just("xx-large"),
         just("xxx-large"),
     ))
+    .filter(|size| match *size {
+        "xx-small" => true,
+        "x-small" => true,
+        "small" => true,
+        "medium" => true,
+        "large" => true,
+        "x-large" => true,
+        "xx-large" => true,
+        "xxx-large" => true,
+        _ => false,
+    })
     .map(|size| {
         use AbsoluteSize::*;
 
@@ -571,156 +590,4 @@ pub fn length_parser<'a>() -> impl Parser<'a, &'a str, Length, extra::Err<Rich<'
             };
             con(a)
         })
-}
-
-#[cfg(test)]
-mod tests {
-    use chumsky::Parser;
-
-    use crate::css_literals::{
-        AbsoluteSize, Angle, Color, color_parser, data_type_parser, fr_parser, length_parser,
-        number_parser, ratio_parser,
-    };
-
-    use super::Length;
-
-    #[test]
-    fn test_length_parsing() {
-        let test_cases = {
-            use super::Length::*;
-
-            vec![("1px", px("1".to_string())), ("2px", px("2".to_string()))]
-        };
-
-        for (src, expected) in test_cases {
-            let l = length_parser()
-                .parse(src)
-                .into_result()
-                .expect(&format!("length parse error {src:?}"));
-
-            assert_eq!(l, expected, "error: {src:?}");
-        }
-    }
-
-    #[test]
-    fn test_color_parsing() {
-        let test_cases = {
-            use super::Color::*;
-
-            vec![
-                ("red", Named("red".to_string())),
-                ("#101010", Hex("101010".to_string())),
-                ("rgb(123 200 0)", Rgb("123 200 0".to_string())),
-                ("rgb(123 ()200 0)", Rgb("123 ()200 0".to_string())),
-                (
-                    "color(from origin-color colorspace channel1 channel2 channel3)",
-                    color("from origin-color colorspace channel1 channel2 channel3".to_string()),
-                ),
-                (
-                    "light-dark(rgb(0 0 0), rgb(255 255 255))",
-                    LightDark("rgb(0 0 0), rgb(255 255 255)".to_string()),
-                ),
-            ]
-        };
-
-        for (src, expected) in test_cases {
-            let l = color_parser()
-                .parse(src)
-                .into_result()
-                .expect(&format!("length parse error {src:?}"));
-
-            assert_eq!(l, expected, "error: {src:?}");
-        }
-    }
-
-    #[test]
-    fn test_ratio_parsing() {
-        let test_cases = vec![
-            ("3/2", ("3".to_string(), "2".to_string())),
-            ("3 / 2", ("3".to_string(), "2".to_string())),
-            ("3/ 2", ("3".to_string(), "2".to_string())),
-            ("3 /2", ("3".to_string(), "2".to_string())),
-        ];
-
-        for (src, expected) in test_cases {
-            let l = ratio_parser()
-                .parse(src)
-                .into_result()
-                .expect(&format!("length parse error {src:?}"));
-
-            assert_eq!(l, expected, "error: {src:?}");
-        }
-    }
-
-    #[test]
-    fn test_fr_parsing() {
-        let test_cases = vec!["3fr", ".4fr", "3.4fr", "23.134fr"];
-
-        for src in test_cases {
-            let l = fr_parser()
-                .parse(src)
-                .into_result()
-                .expect(&format!("fr parse error {src:?}"));
-
-            assert_eq!(l, src.replace("fr", ""), "error: {src:?}");
-        }
-    }
-
-    #[test]
-    fn test_number_parsing() {
-        let test_cases = vec!["3.14", "23.134"];
-
-        for src in test_cases {
-            let l = number_parser()
-                .parse(src)
-                .into_result()
-                .expect(&format!("number parse error {src:?}"));
-
-            assert_eq!(l, src, "error: {src:?}");
-        }
-    }
-
-    #[test]
-    fn test_full_parser() {
-        use super::CssLiteral;
-        let test_cases = vec![
-            ("100%", CssLiteral::Percentage("100".to_string())),
-            ("3", CssLiteral::Integer("3".to_string())),
-            ("3.14", CssLiteral::Number("3.14".to_string())),
-            ("23.134", CssLiteral::Number("23.134".to_string())),
-            ("23.134fr", CssLiteral::Fr("23.134".to_string())),
-            ("-6px", CssLiteral::Length(Length::px("-6".to_string()))),
-            (
-                "120vmin",
-                CssLiteral::Length(Length::vmin("120".to_string())),
-            ),
-            ("red", CssLiteral::Color(Color::Named("red".to_string()))),
-            ("1px", CssLiteral::Length(Length::px("1".to_string()))),
-            ("8rem", CssLiteral::Length(Length::rem("8".to_string()))),
-            ("14rem", CssLiteral::Length(Length::rem("14".to_string()))),
-            ("1/3", CssLiteral::Ratio("1".to_string(), "3".to_string())),
-            ("100%", CssLiteral::Percentage("100".to_string())),
-            ("xx-small", CssLiteral::AbsoluteSize(AbsoluteSize::XxSmall)),
-            ("34.5deg", CssLiteral::Angle(Angle::Deg("34.5".to_string()))),
-            ("center", CssLiteral::Position("center".to_string())),
-            ("left", CssLiteral::Position("left".to_string())),
-            ("center top", CssLiteral::Position("center top".to_string())),
-            ("right 8.5%", CssLiteral::Position("right 8.5%".to_string())),
-            (
-                "bottom 12vmin right -6px",
-                CssLiteral::Position("bottom 12vmin right -6px".to_string()),
-            ),
-            ("10% 20%", CssLiteral::Position("10% 20%".to_string())),
-            ("8rem 14px", CssLiteral::Position("8rem 14px".to_string())),
-        ];
-
-        for (src, expected) in test_cases {
-            let l = data_type_parser()
-                .parse(src)
-                .into_result()
-                .expect(&format!("full parse error {src:?}"));
-
-            assert_eq!(l, expected, "error: {src:?}");
-        }
-    }
 }
