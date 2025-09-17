@@ -545,7 +545,7 @@ pub fn parse_keyframes<'a>()
     just("@keyframes")
         .ignore_then(ignore_whitespace2())
         .ignore_then(parse_utility_name())
-        .ignore_then(ignore_whitespace2())
+        .then_ignore(ignore_whitespace2())
         .then(keyframes_text_parser())
 }
 

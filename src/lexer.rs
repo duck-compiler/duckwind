@@ -95,6 +95,7 @@ pub fn lexer<'a>(
                 '-' | '*' | '[' | ']' | '(' | ')' | '_' | ':' => true,
                 _ => false,
             })
+            .map(|c| if c == '_' { ' ' } else { c })
             .map(Token::Ctrl),
         choice((just(" "), just("\n"), just("\t")))
             .repeated()

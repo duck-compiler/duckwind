@@ -16,6 +16,7 @@ mod parser;
 
 const DEFAULT_CONFIG: &str = include_str!("css/default_config.css");
 const THEME_CONFIG: &str = include_str!("css/theme.css");
+const PREFLIGHT: &str = include_str!("css/preflight.css");
 
 pub fn ignore_whitespace<'a>()
 -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
@@ -57,7 +58,7 @@ impl CssDef {
     pub fn to_css(&self) -> String {
         let mut res = String::new();
         let mut opening_braces = 0;
-        res.push_str(&self.class_name);
+        res.push_str(&format!(".{}", self.class_name));
         for pseudo_elements in &self.pseudo_elements {
             res.push_str(&format!("::{}", pseudo_elements));
         }
@@ -376,6 +377,27 @@ impl EmitEnv {
         }
     }
 
+    pub fn to_css_stylesheet(&self) -> String {
+        let mut result = PREFLIGHT.to_string();
+        result.push_str(":root {\n");
+        for var in self.theme.vars.iter() {
+            result.push_str(&format!("--{}: {};\n", var.0, var.1));
+        }
+        result.push_str("}\n");
+
+        for keyframes in self.theme.keyframes.iter() {
+            result.push_str(&format!("@keyframes {} ", keyframes.0));
+            result.push_str(&keyframes.1);
+            result.push('\n');
+        }
+
+        for def in self.defs.iter() {
+            result.push_str(&def.to_css());
+        }
+
+        result
+    }
+
     pub fn parse_tailwind_str(&mut self, src: &str) -> Option<CssDef> {
         let leaked = src.to_string().leak() as &'static str;
         let toks = lexer("test", leaked).parse(src).into_output()?;
@@ -684,6 +706,7 @@ impl EmitEnv {
             }
         }
 
+        self.defs.push(css_def.clone());
         Some(css_def)
     }
 }
