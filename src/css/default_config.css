@@ -2709,7 +2709,7 @@
 
 @utility shadow-* {
     box-shadow: --value(--shadow-*, [*]);
-    --tw-shadow-color: --value(--color-*);
+    --tw-shadow-color: --value(--color-*, color);
 }
 
 @utility inset-shadow-none {
@@ -2718,7 +2718,7 @@
 
 @utility inset-shadow-* {
     box-shadow: --value(--inset-shadow-*, [*]);
-    --tw-inset-shadow-color: --value(--color-*);
+    --tw-inset-shadow-color: --value(--color-*, color);
 }
 
 @utility ring {
@@ -2728,7 +2728,7 @@
 @utility ring-* {
     --tw-ring-shadow: 0 0 0 --value(number)px;
     --tw-ring-shadow: 0 0 0 --value([*]);
-    --tw-ring-color: --value(--color-*);
+    --tw-ring-color: --value(--color-*, color);
 }
 
 @utility inset-ring {
@@ -2738,7 +2738,7 @@
 @utility inset-ring-* {
     --tw-inset-ring-shadow: 0 0 0 --value(number)px;
     --tw-inset-ring-shadow: 0 0 0 --value([*]);
-    --tw-inset-ring-color: --value(--color-*);
+    --tw-inset-ring-color: --value(--color-*, color);
 }
 
 @utility text-shadow-none {
@@ -3174,7 +3174,7 @@
 
 @utility drop-shadow-* {
     filter: drop-shadow(--value(--drop-shadow-*, [*]));
-    --tw-drop-shadow-color: --value(--color-*);
+    --tw-drop-shadow-color: --value(--color-*, color);
 }
 
 @utility grayscale {
@@ -3248,7 +3248,7 @@
 
 @utility backdrop-drop-shadow-* {
     backdrop-filter: drop-shadow(--value(--drop-shadow-*, [*]));
-    --tw-drop-shadow-color: --value(--color-*);
+    --tw-drop-shadow-color: --value(--color-*, color);
 }
 
 @utility backdrop-grayscale {
@@ -3534,4 +3534,688 @@
 
 @utility scale-3d {
     scale: var(--tw-scale-x) var(--tw-scale-y) var(--tw-scale-z);
+}
+
+@utility skew-* {
+    transform: skewX(--value(number)deg) skewY(--value(number)deg);
+}
+
+@utility -skew-* {
+    transform: skewX(---value(number)deg) skewY(---value(number)deg);
+    transform: skewX(--value([*])) skewY(--value([*]));
+}
+
+@utility skew-x-* {
+    transform: skewX(--value(number)deg);
+    transform: skewX(--value([*]));
+}
+
+@utility -skew-x-* {
+    transform: skewX(---value(number)deg);
+}
+
+@utility skew-y-* {
+    transform: skewY(--value(number)deg);
+}
+
+@utility -skew-y-* {
+    transform: skewY(---value(number)deg);
+    transform: skewY(--value([*]));
+}
+
+@utility transform-* {
+    transform: --value([*]);
+}
+
+@utility transform-none {
+    transform: none;
+}
+
+@utility transform-gpu {
+    transform: translateZ(0) var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y);
+}
+
+@utility transform-cpu {
+    transform: var(--tw-rotate-x) var(--tw-rotate-y) var(--tw-rotate-z) var(--tw-skew-x) var(--tw-skew-y);
+}
+
+@utility origin-center {
+    transform-origin: center;
+}
+
+@utility origin-top {
+    transform-origin: top;
+}
+
+@utility origin-top-right {
+    transform-origin: top right;
+}
+
+@utility origin-right {
+    transform-origin: right;
+}
+
+@utility origin-bottom-right {
+    transform-origin: bottom right;
+}
+
+@utility origin-bottom {
+    transform-origin: bottom;
+}
+
+@utility origin-bottom-left {
+    transform-origin: bottom left;
+}
+
+@utility origin-left {
+    transform-origin: left;
+}
+
+@utility origin-top-left {
+    transform-origin: top left;
+}
+
+@utility origin-* {
+    transform-origin: --value([*]);
+}
+
+@utility translate-* {
+    translate: calc(var(--spacing) * --value(number)) calc(var(--spacing) * --value(number));
+    translate: calc(--value(fraction) * 100%) calc(--value(fraction) * 100%);
+    translate: --value([*]) --value([*]);
+}
+
+@utility -translate-* {
+    translate: calc(var(--spacing) * ---value(number)) calc(var(--spacing) * ---value(number));
+    translate: calc(--value(fraction) * -100%) calc(--value(fraction) * -100%);
+}
+@utility translate-full {
+translate: 100% 100%;
+}
+
+@utility -translate-full {
+translate: -100% -100%;
+}
+
+@utility translate-px {
+translate: 1px 1px;
+}
+@utility -translate-px {
+translate: -1px -1px;
+}
+
+@utility translate-x-* {
+    translate: calc(var(--spacing) * --value(number)) var(--tw-translate-y);
+    translate: calc(--value(fraction) * 100%) var(--tw-translate-y);
+    translate: --value([*]) var(--tw-translate-y);
+}
+
+@utility -translate-x-* {
+    translate: calc(var(--spacing) * ---value(number)) var(--tw-translate-y);
+    translate: calc(--value(fraction) * -100%) var(--tw-translate-y);
+}
+@utility translate-x-full {
+    translate: 100% var(--tw-translate-y);
+}
+@utility -translate-x-full {
+    translate: -100% var(--tw-translate-y);
+}
+@utility translate-x-px {
+    translate: 1px var(--tw-translate-y);
+}
+@utility -translate-x-px {
+    translate: -1px var(--tw-translate-y);
+}
+
+@utility translate-y-* {
+    translate: var(--tw-translate-x) calc(var(--spacing) * --value(number));
+    translate: var(--tw-translate-x) calc(--value(fraction) * 100%);
+    translate: var(--tw-translate-x) --value([*]);
+}
+@utility -translate-y-* {
+    translate: var(--tw-translate-x) calc(var(--spacing) * ---value(number));
+    translate: var(--tw-translate-x) calc(--value(fraction) * -100%);
+}
+@utility translate-y-full {
+    translate: var(--tw-translate-x) 100%;
+}
+@utility -translate-y-full {
+    translate: var(--tw-translate-x) -100%;
+}
+@utility translate-y-px {
+    translate: var(--tw-translate-x) 1px;
+}
+@utility -translate-y-px {
+    translate: var(--tw-translate-x) -1px;
+}
+
+@utility translate-z-* {
+    translate: var(--tw-translate-x) var(--tw-translate-y) calc(var(--spacing) * --value(number));
+    translate: var(--tw-translate-x) var(--tw-translate-y) --value([*]);
+}
+@utility -translate-z-* {
+    translate: var(--tw-translate-x) var(--tw-translate-y) calc(var(--spacing) * ---value(number));
+}
+@utility translate-z-px {
+    translate: var(--tw-translate-x) var(--tw-translate-y) 1px;
+}
+@utility -translate-z-px {
+    translate: var(--tw-translate-x) var(--tw-translate-y) -1px;
+}
+
+@utility translate-none {
+    translate: none;
+}
+
+@utility accent-* {
+    accent-color: --value(--color-*, color, [*]);
+}
+
+@utility appearance-none {
+    appearance: none;
+}
+@utility appearance-auto {
+    appearance: auto;
+}
+
+@utility caret-* {
+    accent-color: --value(--color-*, color, [*]);
+}
+
+@utility scheme-normal {
+    color-scheme: normal;
+}
+
+@utility scheme-dark {
+    color-scheme: dark;
+}
+
+@utility scheme-light {
+    color-scheme: light;
+}
+
+@utility scheme-light-dark {
+    color-scheme: light dark;
+}
+
+@utility scheme-only-dark {
+    color-scheme: only dark;
+}
+
+@utility scheme-only-light {
+    color-scheme: only light;
+}
+
+@utility cursor-auto {
+    cursor: auto;
+}
+
+@utility cursor-default {
+    cursor: default;
+}
+
+@utility cursor-pointer {
+    cursor: pointer;
+}
+
+@utility cursor-wait {
+    cursor: wait;
+}
+
+@utility cursor-text {
+    cursor: text;
+}
+
+@utility cursor-move {
+    cursor: move;
+}
+
+@utility cursor-help {
+    cursor: help;
+}
+
+@utility cursor-not-allowed {
+    cursor: not-allowed;
+}
+
+@utility cursor-none {
+    cursor: none;
+}
+
+@utility cursor-context-menu {
+    cursor: context-menu;
+}
+
+@utility cursor-progress {
+    cursor: progress;
+}
+
+@utility cursor-cell {
+    cursor: cell;
+}
+
+@utility cursor-crosshair {
+    cursor: crosshair;
+}
+
+@utility cursor-vertical-text {
+    cursor: vertical-text;
+}
+
+@utility cursor-alias {
+    cursor: alias;
+}
+
+@utility cursor-copy {
+    cursor: copy;
+}
+
+@utility cursor-no-drop {
+    cursor: no-drop;
+}
+
+@utility cursor-grab {
+    cursor: grab;
+}
+
+@utility cursor-grabbing {
+    cursor: grabbing;
+}
+
+@utility cursor-all-scroll {
+    cursor: all-scroll;
+}
+
+@utility cursor-col-resize {
+    cursor: col-resize;
+}
+
+@utility cursor-row-resize {
+    cursor: row-resize;
+}
+
+@utility cursor-n-resize {
+    cursor: n-resize;
+}
+
+@utility cursor-e-resize {
+    cursor: e-resize;
+}
+
+@utility cursor-s-resize {
+    cursor: s-resize;
+}
+
+@utility cursor-w-resize {
+    cursor: w-resize;
+}
+
+@utility cursor-ne-resize {
+    cursor: ne-resize;
+}
+
+@utility cursor-nw-resize {
+    cursor: nw-resize;
+}
+
+@utility cursor-se-resize {
+    cursor: se-resize;
+}
+
+@utility cursor-sw-resize {
+    cursor: sw-resize;
+}
+
+@utility cursor-ew-resize {
+    cursor: ew-resize;
+}
+
+@utility cursor-ns-resize {
+    cursor: ns-resize;
+}
+
+@utility cursor-nesw-resize {
+    cursor: nesw-resize;
+}
+
+@utility cursor-nwse-resize {
+    cursor: nwse-resize;
+}
+
+@utility cursor-zoom-in {
+    cursor: zoom-in;
+}
+
+@utility cursor-zoom-out {
+    cursor: zoom-out;
+}
+
+@utility cursor-* {
+    cursor: --value([*]);
+}
+
+@utility field-sizing-fixed {
+    field-sizing: fixed;
+}
+
+@utility field-sizing-content {
+    field-sizing: content;
+}
+
+@utility pointer-events-auto {
+    pointer-events: auto;
+}
+
+@utility pointer-events-none {
+    pointer-events: none;
+}
+
+@utility resize-none {
+    resize: none;
+}
+@utility resize {
+    resize: both;
+}
+@utility resize-y {
+    resize: vertical;
+}
+@utility resize-x {
+    resize: horizontal;
+}
+
+@utility scroll-auto {
+    scroll-behavior: auto;
+}
+
+@utility scroll-smooth {
+    scroll-behavior: smooth;
+}
+
+@utility scroll-m-* {
+    scroll-margin: calc(var(--spacing) * --value(number));
+    scroll-margin: --value([*]);
+}
+
+@utility -scroll-m-* {
+    scroll-margin: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-mx-* {
+    scroll-margin-inline: calc(var(--spacing) * --value(number));
+    scroll-margin-inline: --value([*]);
+}
+
+@utility -scroll-mx-* {
+    scroll-margin-inline: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-my-* {
+    scroll-margin-block: calc(var(--spacing) * --value(number));
+    scroll-margin-block: --value([*]);
+}
+
+@utility -scroll-my-* {
+    scroll-margin-block: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-ms-* {
+    scroll-margin-inline-start: calc(var(--spacing) * --value(number));
+    scroll-margin-inline-start: --value([*]);
+}
+
+@utility -scroll-ms-* {
+    scroll-margin-inline-start: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-me-* {
+    scroll-margin-inline-end: calc(var(--spacing) * --value(number));
+    scroll-margin-inline-end: --value([*]);
+}
+
+@utility -scroll-me-* {
+    scroll-margin-inline-end: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-mt-* {
+    scroll-margin-top: calc(var(--spacing) * --value(number));
+    scroll-margin-top: --value([*]);
+}
+
+@utility -scroll-mt-* {
+    scroll-margin-top: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-mr-* {
+    scroll-margin-right: calc(var(--spacing) * --value(number));
+    scroll-margin-right: --value([*]);
+}
+
+@utility -scroll-mr-* {
+    scroll-margin-right: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-mb-* {
+    scroll-margin-bottom: calc(var(--spacing) * --value(number));
+    scroll-margin-bottom: --value([*]);
+}
+
+@utility -scroll-mb-* {
+    scroll-margin-bottom: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-ml-* {
+    scroll-margin-left: calc(var(--spacing) * --value(number));
+    scroll-margin-left: --value([*]);
+}
+
+@utility -scroll-ml-* {
+    scroll-margin-left: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-p-* {
+    scroll-padding: calc(var(--spacing) * --value(number));
+    scroll-padding: --value([*]);
+}
+
+@utility -scroll-p-* {
+    scroll-padding: calc(var(--spacing) * ---value(number));
+}
+
+
+@utility scroll-px-* {
+    scroll-padding-inline: calc(var(--spacing) * --value(number));
+    scroll-padding-inline: --value([*]);
+}
+
+@utility -scroll-px-* {
+    scroll-padding-inline: calc(var(--spacing) * ---value(number));
+}
+
+
+@utility scroll-py-* {
+    scroll-padding-block: calc(var(--spacing) * --value(number));
+    scroll-padding-block: --value([*]);
+}
+
+@utility -scroll-py-*  {
+    scroll-padding-block: calc(var(--spacing) * ---value(number));
+}
+
+
+@utility scroll-ps-* {
+    scroll-padding-inline-start: calc(var(--spacing) * --value(number));
+    scroll-padding-inline-start: --value([*]);
+}
+
+@utility -scroll-ps-* {
+    scroll-padding-inline-start: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-pe-* {
+    scroll-padding-inline-end: calc(var(--spacing) * --value(number));
+    scroll-padding-inline-end: --value([*]);
+}
+
+@utility -scroll-pe-* {
+    scroll-padding-inline-end: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-pt-* {
+    scroll-padding-top: calc(var(--spacing) * --value(number));
+    scroll-padding-top: --value([*]);
+}
+
+@utility -scroll-pt-* {
+    scroll-padding-top: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-pr-* {
+    scroll-padding-right: calc(var(--spacing) * --value(number));
+    scroll-padding-right: --value([*]);
+}
+
+@utility -scroll-pr-* {
+    scroll-padding-right: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-pb-* {
+    scroll-padding-bottom: calc(var(--spacing) * --value(number));
+    scroll-padding-bottom: --value([*]);
+}
+
+@utility -scroll-pb-* {
+    scroll-padding-bottom: calc(var(--spacing) * ---value(number));
+}
+
+@utility scroll-pl-* {
+    scroll-padding-left: calc(var(--spacing) * --value(number));
+    scroll-padding-left: --value([*]);
+}
+
+@utility -scroll-pl-* {
+    scroll-padding-left: calc(var(--spacing) * ---value(number));
+}
+
+@utility snap-start {
+    scroll-snap-align: start;
+}
+
+@utility snap-end {
+    scroll-snap-align: end;
+}
+
+@utility snap-center {
+    scroll-snap-align: center;
+}
+
+@utility snap-align-none {
+    scroll-snap-align: none;
+}
+
+@utility snap-normal {
+    scroll-snap-stop: normal;
+}
+
+@utility snap-always {
+    scroll-snap-stop: always;
+}
+
+@utility snap-none {
+    scroll-snap-type: none;
+}
+
+@utility snap-x {
+    scroll-snap-type: x var(--tw-scroll-snap-strictness);
+}
+@utility snap-y {
+    scroll-snap-type: y var(--tw-scroll-snap-strictness);
+}
+@utility snap-both {
+    scroll-snap-type: both var(--tw-scroll-snap-strictness);
+}
+@utility snap-mandatory {
+    --tw-scroll-snap-strictness: mandatory;
+}
+@utility snap-proximity {
+    --tw-scroll-snap-strictness: proximity;
+}
+
+@utility touch-auto {
+    touch-action: auto;
+}
+@utility touch-none {
+    touch-action: none;
+}
+@utility touch-pan-x {
+    touch-action: pan-x;
+}
+@utility touch-pan-left {
+    touch-action: pan-left;
+}
+@utility touch-pan-right {
+    touch-action: pan-right;
+}
+@utility touch-pan-y {
+    touch-action: pan-y;
+}
+@utility touch-pan-up {
+    touch-action: pan-up;
+}
+@utility touch-pan-down {
+    touch-action: pan-down;
+}
+@utility touch-pinch-zoom {
+    touch-action: pinch-zoom;
+}
+@utility touch-manipulation {
+    touch-action: manipulation;
+}
+
+@utility select-none {
+    user-select: none;
+}
+@utility select-text {
+    user-select: text;
+}
+@utility select-all {
+    user-select: all;
+}
+@utility select-auto {
+    user-select: auto;
+}
+
+@utility will-change-auto {
+    will-change: auto;
+}
+@utility will-change-scroll {
+    will-change: scroll-position;
+}
+@utility will-change-contents {
+    will-change: contents;
+}
+@utility will-change-transform {
+    will-change: transform;
+}
+@utility will-change-* {
+    will-change: --value([*]);
+}
+
+@utility fill-* {
+    fill: --value("none", --color-*);
+}
+
+@utility stroke-* {
+    stroke: --value("none", --color-*);
+}
+
+@utility stroke-* {
+    stroke-width: --value(number);
+    stroke-width: --value([*]);
+}
+
+@utility forced-color-adjust-auto {
+    forced-color-adjust: auto;
+}
+@utility forced-color-adjust-none {
+    forced-color-adjust: none;
 }
