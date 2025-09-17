@@ -421,27 +421,27 @@ impl EmitEnv {
 
                         let mut what_is_it = WhatIsIt::Undefined;
 
-                        if pre_str.starts_with("text") {
-                            if self.theme.vars.contains_key(&format!(
+                        if pre_str.starts_with("text")
+                            && self.theme.vars.contains_key(&format!(
                                 "text{}{}",
                                 if pre_len > 1 { "" } else { "-" },
-                                vec![&pre_str[4..], pre]
+                                [&pre_str[4..], pre]
                                     .iter()
                                     .filter(|x| !x.is_empty())
                                     .map(Deref::deref)
                                     .collect::<Vec<_>>()
                                     .join("-")
-                            )) {
-                                if special_param.starts_with("[") && special_param.ends_with("]") {
-                                    what_is_it = WhatIsIt::LineHeight(
-                                        special_param[1..special_param.len() - 1].to_string(),
-                                    );
-                                } else {
-                                    what_is_it = WhatIsIt::LineHeight(format!(
-                                        "calc(var(--spacing) * {})",
-                                        special_param.to_string()
-                                    ));
-                                }
+                            ))
+                        {
+                            if special_param.starts_with("[") && special_param.ends_with("]") {
+                                what_is_it = WhatIsIt::LineHeight(
+                                    special_param[1..special_param.len() - 1].to_string(),
+                                );
+                            } else {
+                                what_is_it = WhatIsIt::LineHeight(format!(
+                                    "calc(var(--spacing) * {})",
+                                    special_param
+                                ));
                             }
                         }
 
@@ -461,13 +461,11 @@ impl EmitEnv {
                                     if matches!(css_literal, CssLiteral::Number(..)) {
                                         what_is_it = WhatIsIt::LineHeight(format!(
                                             "calc(var(--spacing) * {})",
-                                            special_param.to_string()
+                                            special_param
                                         ));
                                     } else if matches!(css_literal, CssLiteral::Color(..)) {
-                                        what_is_it = WhatIsIt::Opacity(format!(
-                                            "{}%",
-                                            special_param.to_string()
-                                        ));
+                                        what_is_it =
+                                            WhatIsIt::Opacity(format!("{}%", special_param));
                                     }
                                 }
                             }

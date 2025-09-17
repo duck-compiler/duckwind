@@ -529,7 +529,7 @@ pub fn keyframes_text_parser<'a>()
             .ignore_then(
                 choice((
                     just("{").rewind().ignore_then(e.clone()),
-                    any().and_is(just("}").not()).map(|x| String::from(x)),
+                    any().and_is(just("}").not()).map(String::from),
                 ))
                 .repeated()
                 .collect::<Vec<_>>()
