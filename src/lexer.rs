@@ -99,7 +99,7 @@ pub fn parse_unit<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, 
 pub fn lexer<'a>(
     file_name: &'static str,
     file_contents: &'static str,
-) -> impl Parser<'a, &'a str, Vec<Spanned<Token>>, extra::Err<Rich<'a, char>>> + Clone {
+) -> impl Parser<'a, &'a str, (Vec<Spanned<Token>>, usize), extra::Err<Rich<'a, char>>> + Clone {
     choice((
         parse_raw_text().map(Token::Raw),
         parse_unit().map(Token::Unit),
@@ -134,6 +134,13 @@ pub fn lexer<'a>(
     })
     .repeated()
     .collect::<Vec<_>>()
+    .map_with(|x, e| {
+        (
+            x,
+            e.span().end,
+        )
+    })
+    .then_ignore(any().repeated())
 }
 
 #[cfg(test)]

@@ -364,21 +364,40 @@ impl EmitEnv {
         res
     }
 
-    pub fn load_config(&mut self, s: &str) {
-        let parsed_config = config_parser()
-            .parse(s)
-            .into_result()
-            .expect("parse errors");
-        self.utilities.extend(parsed_config.utilities);
-        self.variants.extend(parsed_config.variants);
-        for theme in parsed_config.themes {
-            self.theme.vars.extend(theme.vars);
-            self.theme.keyframes.extend(theme.keyframes);
+    pub fn new() -> Self {
+        let res = EmitEnv {
+            defs: Vec::new(),
+            utilities: Vec::new(),
+            variants: Vec::new(),
+            theme: Theme {
+                vars: HashMap::new(),
+                keyframes: HashMap::new(),
+            },
+        };
+        res
+    }
+
+    pub fn load_config(&mut self, s: &str) -> bool {
+        let parsed_config = config_parser().parse(s).into_result().ok();
+        if let Some(parsed_config) = parsed_config {
+            self.utilities.extend(parsed_config.utilities);
+            self.variants.extend(parsed_config.variants);
+            for theme in parsed_config.themes {
+                self.theme.vars.extend(theme.vars);
+                self.theme.keyframes.extend(theme.keyframes);
+            }
+            true
+        } else {
+            false
         }
     }
 
-    pub fn to_css_stylesheet(&self) -> String {
-        let mut result = PREFLIGHT.to_string();
+    pub fn to_css_stylesheet(&self, with_preflight: bool) -> String {
+        let mut result = if with_preflight {
+            PREFLIGHT.to_string()
+        } else {
+            String::new()
+        };
         result.push_str(":root {\n");
         for var in self.theme.vars.iter() {
             result.push_str(&format!("--{}: {};\n", var.0, var.1));
@@ -398,9 +417,10 @@ impl EmitEnv {
         result
     }
 
-    pub fn parse_tailwind_str(&mut self, src: &str) -> Option<CssDef> {
+    pub fn parse_tailwind_str(&mut self, mut src: &str) -> Option<(CssDef, usize)> {
         let leaked = src.to_string().leak() as &'static str;
-        let toks = lexer("test", leaked).parse(src).into_output()?;
+        let (toks, end) = lexer("test", leaked).parse(src).into_output()?;
+        src = &src[..end];
 
         let parsed = duckwind_parser(make_input)
             .parse(make_input(make_eoi("test", leaked), toks.as_slice()))
@@ -518,6 +538,7 @@ impl EmitEnv {
                     for utility in self.utilities.iter() {
                         if utility.has_value
                             && full.starts_with(utility.name.as_str())
+                            && full.len() > utility.name.len()
                             && let Ok(res) = utility.instantiate(
                                 &self.theme,
                                 Some(&full[&utility.name.len() + 1..]),
@@ -707,6 +728,6 @@ impl EmitEnv {
         }
 
         self.defs.push(css_def.clone());
-        Some(css_def)
+        Some((css_def, end))
     }
 }
