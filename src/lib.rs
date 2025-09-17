@@ -17,9 +17,6 @@ mod lexer;
 mod parser;
 
 const DEFAULT_CONFIG: &str = include_str!("css/default_config.css");
-const TEXT_COLOR_CONFIG: &str = include_str!("css/text_color.css");
-const TEXT_DECORATION_COLOR_CONFIG: &str = include_str!("css/text_decoration_color.css");
-const BG_COLOR_CONFIG: &str = include_str!("css/bg_color.css");
 const THEME_CONFIG: &str = include_str!("css/theme.css");
 
 pub fn ignore_whitespace<'a>()
@@ -358,9 +355,6 @@ impl EmitEnv {
             },
         };
         res.load_config(DEFAULT_CONFIG);
-        // res.load_config(TEXT_COLOR_CONFIG);
-        // res.load_config(TEXT_DECORATION_COLOR_CONFIG);
-        // res.load_config(BG_COLOR_CONFIG);
         res.load_config(THEME_CONFIG);
         res
     }
