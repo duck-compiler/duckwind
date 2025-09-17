@@ -308,7 +308,7 @@ pub fn parse_value_param<'a>()
             choice((
                 just("*").map_with(|_, e| {
                     let x: <&'static str as Input<'static>>::Span = e.span();
-                    dbg!(ParseUnit::Target(x.start))
+                    ParseUnit::Target(x.start)
                 }),
                 any()
                     .filter(|c: &char| c.is_alphanumeric() || *c == '-')
@@ -726,7 +726,6 @@ mod tests {
             )
             .into_result()
             .expect("utility error");
-        // dbg!(util.instantiate(Some("lit")));
         assert!(false);
     }
 
@@ -737,7 +736,6 @@ mod tests {
             .parse("@custom-variant lol (&:is(.test));")
             .into_result()
             .expect("utility error");
-        dbg!(util);
         assert!(false);
     }
 
@@ -754,8 +752,6 @@ mod tests {
             .parse(src)
             .into_result()
             .expect("config parse error");
-        // dbg!(util.instantiate(Some("lit")));
-        dbg!(util);
         assert!(false);
     }
 
