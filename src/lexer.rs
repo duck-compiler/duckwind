@@ -20,7 +20,6 @@ pub enum Token {
     Ctrl(char),
     Unit(String),
     Raw(String),
-    Whitespace,
 }
 
 #[allow(dead_code)]
@@ -46,6 +45,12 @@ impl Token {
     }
 }
 
+pub fn parse_url<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
+    just("url(")
+        .ignore_then(any().and_is(just(")").not()).repeated().collect::<String>())
+        .map(|x| format!("url({x})"))
+}
+
 pub fn parse_raw_text<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone
 {
     recursive(|parser| {
@@ -56,7 +61,15 @@ pub fn parse_raw_text<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<
                         .rewind()
                         .ignore_then(parser.clone())
                         .map(|x| format!("[{x}]")),
-                    any().filter(|c: &char| *c != ']').map(String::from),
+                    parse_url(),
+                    any()
+                        .and_is(just("\\_"))
+                        .map(|_| String::from("_"))
+                        .then_ignore(just("_")),
+                    any()
+                        .filter(|c: &char| *c != ']')
+                        .map(|c| if c == '_' { ' ' } else { c })
+                        .map(String::from),
                 ))
                 .repeated()
                 .collect::<Vec<String>>(),
@@ -91,16 +104,20 @@ pub fn lexer<'a>(
         parse_raw_text().map(Token::Raw),
         parse_unit().map(Token::Unit),
         any()
+            .and_is(just("\\_"))
+            .map(|_| Token::Ctrl('_'))
+            .then_ignore(just("_")),
+        any()
             .filter(|x| match *x {
                 '-' | '*' | '[' | ']' | '(' | ')' | '_' | ':' => true,
                 _ => false,
             })
             .map(|c| if c == '_' { ' ' } else { c })
             .map(Token::Ctrl),
-        choice((just(" "), just("\n"), just("\t")))
-            .repeated()
-            .at_least(1)
-            .map(|_| Token::Whitespace),
+        // choice((just(" "), just("\n"), just("\t")))
+        //     .repeated()
+        //     .at_least(1)
+        //     .map(|_| Token::Whitespace),
     ))
     .map_with(move |x, e| {
         (
@@ -186,7 +203,6 @@ mod tests {
                     Token::Unit("p".to_string()),
                     Token::Ctrl('-'),
                     Token::Unit("4".to_string()),
-                    Token::Whitespace,
                     Token::Unit("m".to_string()),
                     Token::Ctrl('-'),
                     Token::Unit("8".to_string()),
@@ -198,7 +214,6 @@ mod tests {
                     Token::Unit("p".to_string()),
                     Token::Ctrl('-'),
                     Token::Unit("4".to_string()),
-                    Token::Whitespace,
                     Token::Unit("m".to_string()),
                     Token::Ctrl('-'),
                     Token::Unit("8".to_string()),
@@ -210,7 +225,6 @@ mod tests {
                     Token::Unit("p".to_string()),
                     Token::Ctrl('-'),
                     Token::Raw("100px".to_string()),
-                    Token::Whitespace,
                     Token::Unit("m".to_string()),
                     Token::Ctrl('-'),
                     Token::Raw("3rem".to_string()),
