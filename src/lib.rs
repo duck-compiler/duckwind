@@ -90,41 +90,47 @@ impl Default for EmitEnv {
 
 impl EmitEnv {
     pub fn get_breakpoint_var(&self, name: &str) -> Option<String> {
-        Some(if let Some(val) = self.theme.vars.get(&format!("breakpoint-{name}")) {
-            val.to_string()
-        } else {
-            match name {
-                "sm" => "40rem",
-                "md" => "48rem",
-                "lg" => "64rem",
-                "xl" => "80rem",
-                "2xl" => "96rem",
-                _ => return None,
-            }.to_string()
-        })
+        Some(
+            if let Some(val) = self.theme.vars.get(&format!("breakpoint-{name}")) {
+                val.to_string()
+            } else {
+                match name {
+                    "sm" => "40rem",
+                    "md" => "48rem",
+                    "lg" => "64rem",
+                    "xl" => "80rem",
+                    "2xl" => "96rem",
+                    _ => return None,
+                }
+                .to_string()
+            },
+        )
     }
 
     pub fn get_container_breakpoint_var(&self, name: &str) -> Option<String> {
-        Some(if let Some(val) = self.theme.vars.get(&format!("container-{name}")) {
-            val.to_string()
-        } else {
-            match name {
-                "3xs" => "16rem",
-                "2xs" => "18rem",
-                "xs" => "20rem",
-                "sm" => "24rem",
-                "md" => "28rem",
-                "lg" => "32rem",
-                "xl" => "36rem",
-                "2xl" => "42rem",
-                "3xl" => "48rem",
-                "4xl" => "56rem",
-                "5xl" => "64rem",
-                "6xl" => "72rem",
-                "7xl" => "80rem",
-                _ => return None,
-            }.to_string()
-        })
+        Some(
+            if let Some(val) = self.theme.vars.get(&format!("container-{name}")) {
+                val.to_string()
+            } else {
+                match name {
+                    "3xs" => "16rem",
+                    "2xs" => "18rem",
+                    "xs" => "20rem",
+                    "sm" => "24rem",
+                    "md" => "28rem",
+                    "lg" => "32rem",
+                    "xl" => "36rem",
+                    "2xl" => "42rem",
+                    "3xl" => "48rem",
+                    "4xl" => "56rem",
+                    "5xl" => "64rem",
+                    "6xl" => "72rem",
+                    "7xl" => "80rem",
+                    _ => return None,
+                }
+                .to_string()
+            },
+        )
     }
 
     pub fn resolve_internal_variant(&self, body: &str, v: &[(ParsedUnit, DWS)]) -> Option<String> {
@@ -426,7 +432,7 @@ impl EmitEnv {
                             && full.starts_with(utility.name.as_str())
                             && let Ok(res) = utility.instantiate(
                                 &self.theme,
-                                Some(&full[&utility.name.len()+1..]),
+                                Some(&full[&utility.name.len() + 1..]),
                                 false,
                             )
                         {
@@ -571,12 +577,27 @@ impl EmitEnv {
                                     })
                                     .collect::<Vec<_>>()
                                     .join("-");
-                                if let Some(variant) = self
+
+                                if let Some(breakpoint) = self.get_breakpoint_var(joined.as_str()) {
+                                    css_def.body = format!(
+                                        "@media (width >= {breakpoint}) {{\n{}\n}}",
+                                        css_def.body
+                                    );
+                                } else if joined.starts_with("@")
+                                    && joined.len() > 1
+                                    && let Some(container_breakpoint) =
+                                        self.get_container_breakpoint_var(&joined[1..])
+                                {
+                                    css_def.body = format!(
+                                        "@container (width >= {container_breakpoint}) {{\n{}\n}}",
+                                        css_def.body
+                                    );
+                                } else if let Some(variant) = self
                                     .variants
                                     .iter()
                                     .find(|x| x.name.as_str() == joined.as_str())
                                 {
-                                    css_def.body = dbg!(variant.instantiate(&css_def.body));
+                                    css_def.body = variant.instantiate(&css_def.body);
                                 } else {
                                     css_def.body =
                                         self.resolve_internal_variant(css_def.body.as_str(), v)?;
