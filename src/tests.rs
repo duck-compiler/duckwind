@@ -36,6 +36,7 @@ fn test_css_def() {
     dbg!(&emit_env.variants);
 
     let test_cases = vec![
+        ("ease-linear", "a"),
         ("outline-red", "a"),
         ("min-w-3xl", "a"),
         ("text-[red]", "a"),

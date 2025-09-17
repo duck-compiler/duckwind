@@ -64,23 +64,9 @@ pub fn parse_raw_text<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<
     })
 }
 
-pub fn parse_first_unit<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone
-{
-    just("-")
-        .or_not()
-        .then(
-            any()
-                .filter(|c: &char| c.is_ascii_alphanumeric() || *c == '/' || *c == '#' || *c == '@')
-                .repeated()
-                .at_least(1)
-                .collect::<String>(),
-        )
-        .map(|(hyphen, unit)| format!("{}{unit}", hyphen.unwrap_or_default()))
-}
-
 pub fn parse_unit<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     any()
-        .filter(|c: &char| c.is_ascii_alphanumeric() || *c == '/' || *c == '#' || *c == '@')
+        .filter(|c: &char| c.is_ascii_alphanumeric() || *c == '/' || *c == '#' || *c == '@' || *c == '%')
         .repeated()
         .at_least(1)
         .collect()

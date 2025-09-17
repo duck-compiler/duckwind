@@ -684,6 +684,7 @@ mod tests {
     fn test_full_parser() {
         use super::CssLiteral;
         let test_cases = vec![
+            ("100%", CssLiteral::Percentage("100".to_string())),
             ("3", CssLiteral::Integer("3".to_string())),
             ("3.14", CssLiteral::Number("3.14".to_string())),
             ("23.134", CssLiteral::Number("23.134".to_string())),

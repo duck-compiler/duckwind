@@ -267,6 +267,7 @@ pub struct ValueCall {
 pub fn parse_css_data_type<'a>()
 -> impl Parser<'a, &'a str, ValueType, extra::Err<Rich<'a, char>>> + Clone {
     choice((
+        // todo: add size
         just("length").map(|_| ValueType::Length),
         just("percentage").map(|_| ValueType::Percentage),
         just("color").map(|_| ValueType::Color),
@@ -324,7 +325,7 @@ pub fn parse_value_param<'a>()
                     }
                     acc
                 });
-                dbg!(ValueUsage::Var(text, target_idx.unwrap()))
+                ValueUsage::Var(text, target_idx.unwrap())
             }),
         ),
         parse_css_data_type().map(ValueUsage::Type),
