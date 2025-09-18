@@ -442,9 +442,11 @@ impl EmitEnv {
         let (toks, end) = lexer("test", leaked).parse(src).into_output()?;
         src = &src[..end];
 
+        dbg!(1);
         let parsed = duckwind_parser(make_input)
             .parse(make_input(make_eoi("test", leaked), toks.as_slice()))
             .into_output()?;
+        dbg!(2);
 
         let mut css_def = CssDef::default();
         let class_name = escape_string_for_css(src);
@@ -478,7 +480,9 @@ impl EmitEnv {
             match last.0 {
                 ParsedUnit::String(mut last_str) => {
                     let mut after = None;
-                    if let Some((pre, special_param)) = last_str.split_once("/") {
+                    if !pre_str.starts_with("aspect")
+                        && let Some((pre, special_param)) = last_str.split_once("/")
+                    {
                         #[derive(Debug, Clone)]
                         enum WhatIsIt {
                             Opacity(String),
@@ -580,6 +584,7 @@ impl EmitEnv {
                             && let Ok(res) =
                                 utility.instantiate(&self.theme, Some(last_str.as_str()), false)
                         {
+                            println!("{}", utility.name);
                             body_to_set = Some(res);
                         }
                     }
