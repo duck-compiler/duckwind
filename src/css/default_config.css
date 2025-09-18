@@ -13,11 +13,21 @@
     }
 }
 
+@custom-variant not-dark {
+    @media (not (prefers-color-scheme: dark)) {
+        @slot;
+    }
+}
+
 @custom-variant active (&:active);
 @custom-variant focus (&:focus);
 @custom-variant focus-visible (&:focus-visible);
 @custom-variant focus-within (&:focus-withhin);
 @custom-variant target-current (&:target-current);
+
+@utility @container {
+    container-type: inline-size;
+}
 
 @utility aspect-square {
     aspect-ratio: 1 / 1;
