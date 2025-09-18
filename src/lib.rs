@@ -1,6 +1,6 @@
-use std::{collections::HashMap, ops::Deref};
+use std::{collections::{HashMap, HashSet}, ops::Deref};
 
-use chumsky::{IterParser, Parser, error::Rich, extra, prelude::any};
+use chumsky::{container::Container, error::Rich, extra, prelude::any, IterParser, Parser};
 
 use crate::{
     config_css::{Theme, Utility, Variant, config_parser},
@@ -79,6 +79,7 @@ pub struct EmitEnv {
     pub utilities: Vec<Utility>,
     pub variants: Vec<Variant>,
     pub theme: Theme,
+    pub defs_generated: HashSet<String>,
 }
 
 impl Default for EmitEnv {
@@ -441,6 +442,11 @@ impl EmitEnv {
 
         let mut css_def = CssDef::default();
         let class_name = escape_string_for_css(src);
+
+        if self.defs_generated.contains(&class_name) {
+            return None;
+        }
+
         css_def.class_name = class_name;
 
         let mut body_to_set = None;
@@ -741,6 +747,7 @@ impl EmitEnv {
         }
 
         self.defs.push(css_def.clone());
+        self.defs_generated.push(css_def.class_name.clone());
         Some((css_def, end))
     }
 }
