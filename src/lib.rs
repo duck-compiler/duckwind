@@ -1,6 +1,9 @@
-use std::{collections::{HashMap, HashSet}, ops::Deref};
+use std::{
+    collections::{HashMap, HashSet},
+    ops::Deref,
+};
 
-use chumsky::{container::Container, error::Rich, extra, prelude::any, IterParser, Parser};
+use chumsky::{IterParser, Parser, container::Container, error::Rich, extra, prelude::any};
 
 use crate::{
     config_css::{Theme, Utility, Variant, config_parser},
@@ -394,11 +397,11 @@ impl EmitEnv {
     }
 
     pub fn load_config(&mut self, s: &str) -> bool {
-        let parsed_config = Some(config_parser().parse(s).into_result().unwrap());
+        let parsed_config = config_parser().parse(s).into_result().ok();
         if let Some(parsed_config) = parsed_config {
             self.utilities.extend(parsed_config.utilities);
             self.variants.extend(parsed_config.variants);
-            dbg!(&parsed_config.themes);
+
             for theme in parsed_config.themes {
                 self.theme.vars.extend(theme.vars);
                 self.theme.keyframes.extend(theme.keyframes);
