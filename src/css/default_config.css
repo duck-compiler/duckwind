@@ -612,6 +612,10 @@
     z-index: --value(number, "auto", [*]);
 }
 
+@utility -z-* {
+    z-index: ---value(number);
+}
+
 @utility basis-* {
     flex-basis: calc(var(--spacing) * --value(number));
     flex-basis: calc(--value(fraction) * 100%);
