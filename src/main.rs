@@ -71,7 +71,7 @@ fn main() -> Result<()> {
         if let Some(out) = cli.out.as_ref() {
             std::fs::write(out, as_css).expect("Could not write output file");
         } else {
-            println!("{as_css}");
+            // println!("{as_css}");
         }
     };
 
