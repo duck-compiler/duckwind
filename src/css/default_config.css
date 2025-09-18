@@ -383,12 +383,12 @@
 
 @utility inset-* {
     inset: calc(var(--spacing) * --value(number));
-    inset: calc(--value(fraction) * 100%);
+    inset: calc(--value(ratio) * 100%);
     inset: --value([*]);
 }
 @utility -inset-* {
     inset: calc(var(--spacing) * ---value(number));
-    inset: calc(--value(fraction) * -100%);
+    inset: calc(--value(ratio) * -100%);
 }
 @utility inset-px {
     inset: 1px;
@@ -407,12 +407,12 @@
 }
 @utility inset-x-* {
     inset-inline: calc(var(--spacing) * --value(number));
-    inset-inline: calc(--value(fraction) * 100%);
+    inset-inline: calc(--value(ratio) * 100%);
     inset-inline: --value([*]);
 }
 @utility -inset-x-* {
     inset-inline: calc(var(--spacing) * ---value(number));
-    inset-inline: calc(--value(fraction) * -100%);
+    inset-inline: calc(--value(ratio) * -100%);
 }
 @utility inset-x-px {
     inset-inline: 1px;
@@ -431,12 +431,12 @@
 }
 @utility inset-y-* {
     inset-block: calc(var(--spacing) * --value(number));
-    inset-block: calc(--value(fraction) * 100%);
+    inset-block: calc(--value(ratio) * 100%);
     inset-block: --value([*]);
 }
 @utility -inset-y-* {
     inset-block: calc(var(--spacing) * ---value(number));
-    inset-block: calc(--value(fraction) * -100%);
+    inset-block: calc(--value(ratio) * -100%);
 }
 @utility inset-y-px {
     inset-block: 1px;
@@ -455,12 +455,12 @@
 }
 @utility start-* {
     inset-inline-start: calc(var(--spacing) * --value(number));
-    inset-inline-start: calc(--value(fraction) * 100%);
+    inset-inline-start: calc(--value(ratio) * 100%);
     inset-inline-start: --value([*]);
 }
 @utility -start-* {
     inset-inline-start: calc(var(--spacing) * ---value(number));
-    inset-inline-start: calc(--value(fraction) * -100%);
+    inset-inline-start: calc(--value(ratio) * -100%);
 }
 @utility start-px {
     inset-inline-start: 1px;
@@ -479,12 +479,12 @@
 }
 @utility end-* {
     inset-inline-end: calc(var(--spacing) * --value(number));
-    inset-inline-end: calc(--value(fraction) * 100%);
+    inset-inline-end: calc(--value(ratio) * 100%);
     inset-inline-end: --value([*]);
 }
 @utility -end-* {
     inset-inline-end: calc(var(--spacing) * ---value(number));
-    inset-inline-end: calc(--value(fraction) * -100%);
+    inset-inline-end: calc(--value(ratio) * -100%);
 }
 @utility end-px {
     inset-inline-end: 1px;
@@ -503,12 +503,12 @@
 }
 @utility top-* {
     top: calc(var(--spacing) * --value(number));
-    top: calc(--value(fraction) * 100%);
+    top: calc(--value(ratio) * 100%);
     top: --value([*]);
 }
 @utility -top-* {
     top: calc(var(--spacing) * ---value(number));
-    top: calc(--value(fraction) * -100%);
+    top: calc(--value(ratio) * -100%);
 }
 @utility top-px {
     top: 1px;
@@ -527,12 +527,12 @@
 }
 @utility left-* {
     left: calc(var(--spacing) * --value(number));
-    left: calc(--value(fraction) * 100%);
+    left: calc(--value(ratio) * 100%);
     left: --value([*]);
 }
 @utility -left-* {
     left: calc(var(--spacing) * ---value(number));
-    left: calc(--value(fraction) * -100%);
+    left: calc(--value(ratio) * -100%);
 }
 @utility left-px {
     left: 1px;
@@ -551,12 +551,12 @@
 }
 @utility right-* {
     right: calc(var(--spacing) * --value(number));
-    right: calc(--value(fraction) * 100%);
+    right: calc(--value(ratio) * 100%);
     right: --value([*]);
 }
 @utility -right-* {
     right: calc(var(--spacing) * ---value(number));
-    right: calc(--value(fraction) * -100%);
+    right: calc(--value(ratio) * -100%);
 }
 @utility right-px {
     right: 1px;
@@ -575,12 +575,12 @@
 }
 @utility bottom-* {
     bottom: calc(var(--spacing) * --value(number));
-    bottom: calc(--value(fraction) * 100%);
+    bottom: calc(--value(ratio) * 100%);
     bottom: --value([*]);
 }
 @utility -bottom-* {
     bottom: calc(var(--spacing) * ---value(number));
-    bottom: calc(--value(fraction) * -100%);
+    bottom: calc(--value(ratio) * -100%);
 }
 @utility bottom-px {
     bottom: 1px;
@@ -618,7 +618,7 @@
 
 @utility basis-* {
     flex-basis: calc(var(--spacing) * --value(number));
-    flex-basis: calc(--value(fraction) * 100%);
+    flex-basis: calc(--value(ratio) * 100%);
 }
 @utility basis-full {
     flex-basis: 100%;
@@ -652,7 +652,7 @@
 
 @utility flex-* {
     flex: --value(number, "auto", "none", [*]);
-    flex: calc(--value(fraction) * 100%);
+    flex: calc(--value(ratio) * 100%);
 }
 @utility flex-initial {
     flex-initial: 0 auto;
@@ -1283,7 +1283,7 @@
 
 @utility w-* {
     width: calc(var(--spacing) * --value(number));
-    width: calc(--value(fraction) * 100%);
+    width: calc(--value(ratio) * 100%);
     width: --value([*]);
     width: --value("auto", --container-*);
 }
@@ -1326,7 +1326,7 @@
 
 @utility size-* {
     width: calc(var(--spacing) * --value(number)); heigth: calc(var(--spacing) * --value(number));
-    width: calc(--value(fraction) * 100%); heigth: calc(--value(fraction) * 100%);
+    width: calc(--value(ratio) * 100%); heigth: calc(--value(ratio) * 100%);
     width: --value([*]); height: --value([*]);
 }
 @utility size-auto {
@@ -1380,7 +1380,7 @@
 
 @utility min-w-* {
     min-width: calc(var(--spacing) * --value(number));
-    min-width: calc(--value(fraction) * 100%);
+    min-width: calc(--value(ratio) * 100%);
     min-width: --value("auto", --container-*, [*]);
 }
 @utility min-w-px {
@@ -1422,7 +1422,7 @@
 
 @utility max-w-* {
     max-width: calc(var(--spacing) * --value(number));
-    max-width: calc(--value(fraction) * 100%);
+    max-width: calc(--value(ratio) * 100%);
     max-width: --value("auto", --container-*, [*]);
 }
 @utility max-w-px {
@@ -1482,7 +1482,7 @@
 
 @utility h-* {
     height: calc(var(--spacing) * --value(number));
-    height: calc(--value(fraction) * 100%);
+    height: calc(--value(ratio) * 100%);
     height: --value("auto", --container-*, [*]);
 }
 @utility h-px {
@@ -1527,7 +1527,7 @@
 
 @utility min-h-* {
     min-height: calc(var(--spacing) * --value(number));
-    min-height: calc(--value(fraction) * 100%);
+    min-height: calc(--value(ratio) * 100%);
     min-height: --value("auto", --container-*, [*]);
 }
 @utility min-h-px {
@@ -1575,7 +1575,7 @@
 
 @utility max-h-* {
     max-height: calc(var(--spacing) * --value(number));
-    max-height: calc(--value(fraction) * 100%);
+    max-height: calc(--value(ratio) * 100%);
     max-height: --value("auto", --container-*, [*]);
 }
 @utility max-h-px {
@@ -3571,13 +3571,13 @@
 
 @utility translate-* {
     translate: calc(var(--spacing) * --value(number)) calc(var(--spacing) * --value(number));
-    translate: calc(--value(fraction) * 100%) calc(--value(fraction) * 100%);
+    translate: calc(--value(ratio) * 100%) calc(--value(ratio) * 100%);
     translate: --value([*]) --value([*]);
 }
 
 @utility -translate-* {
     translate: calc(var(--spacing) * ---value(number)) calc(var(--spacing) * ---value(number));
-    translate: calc(--value(fraction) * -100%) calc(--value(fraction) * -100%);
+    translate: calc(--value(ratio) * -100%) calc(--value(ratio) * -100%);
 }
 @utility translate-full {
 translate: 100% 100%;
@@ -3596,13 +3596,13 @@ translate: -1px -1px;
 
 @utility translate-x-* {
     translate: calc(var(--spacing) * --value(number)) var(--tw-translate-y);
-    translate: calc(--value(fraction) * 100%) var(--tw-translate-y);
+    translate: calc(--value(ratio) * 100%) var(--tw-translate-y);
     translate: --value([*]) var(--tw-translate-y);
 }
 
 @utility -translate-x-* {
     translate: calc(var(--spacing) * ---value(number)) var(--tw-translate-y);
-    translate: calc(--value(fraction) * -100%) var(--tw-translate-y);
+    translate: calc(--value(ratio) * -100%) var(--tw-translate-y);
 }
 @utility translate-x-full {
     translate: 100% var(--tw-translate-y);
@@ -3619,12 +3619,12 @@ translate: -1px -1px;
 
 @utility translate-y-* {
     translate: var(--tw-translate-x) calc(var(--spacing) * --value(number));
-    translate: var(--tw-translate-x) calc(--value(fraction) * 100%);
+    translate: var(--tw-translate-x) calc(--value(ratio) * 100%);
     translate: var(--tw-translate-x) --value([*]);
 }
 @utility -translate-y-* {
     translate: var(--tw-translate-x) calc(var(--spacing) * ---value(number));
-    translate: var(--tw-translate-x) calc(--value(fraction) * -100%);
+    translate: var(--tw-translate-x) calc(--value(ratio) * -100%);
 }
 @utility translate-y-full {
     translate: var(--tw-translate-x) 100%;
