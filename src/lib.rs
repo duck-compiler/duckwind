@@ -372,6 +372,7 @@ impl EmitEnv {
                 vars: HashMap::new(),
                 keyframes: HashMap::new(),
             },
+            defs_generated: HashSet::new(),
         };
         res.load_config(DEFAULT_CONFIG);
         res.load_config(THEME_CONFIG);
@@ -387,6 +388,7 @@ impl EmitEnv {
                 vars: HashMap::new(),
                 keyframes: HashMap::new(),
             },
+            defs_generated: HashSet::new(),
         };
         res
     }
