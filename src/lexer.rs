@@ -48,6 +48,7 @@ impl Token {
 pub fn parse_url<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
     just("url(")
         .ignore_then(any().and_is(just(")").not()).repeated().collect::<String>())
+        .then_ignore(just(")"))
         .map(|x| format!("url({x})"))
 }
 
