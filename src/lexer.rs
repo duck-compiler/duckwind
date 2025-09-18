@@ -91,6 +91,7 @@ pub fn parse_unit<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, 
                 || *c == '*'
                 || *c == '['
                 || *c == ']'
+                || *c == '.'
         })
         .repeated()
         .at_least(1)
