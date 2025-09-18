@@ -92,9 +92,6 @@ impl EmitEnv {
     pub fn parse_full_string(&mut self, txt: &str) {
         let mut i = 0;
         while i < txt.len() {
-            while i < txt.len() && !txt.is_char_boundary(i) {
-                i += 1;
-            }
             if let Some((_, skip)) = self.parse_tailwind_str(&txt[i..]) {
                 i += skip;
             }
