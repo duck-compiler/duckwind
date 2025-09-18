@@ -486,12 +486,12 @@ pub fn variant_parser<'a>() -> impl Parser<'a, &'a str, Variant, extra::Err<Rich
                     }
                 }
                 let len = s_buf.len();
-                s_buf.push_str(" {\\n\\n}");
+                s_buf.push_str(" {\n\n}");
 
                 Variant {
                     name,
                     body: s_buf,
-                    target: len + 3,
+                    target: len + 2,
                     is_short: true,
                 }
             }),
