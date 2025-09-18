@@ -1,7 +1,7 @@
 use clap::Parser;
 use duckwind::EmitEnv;
 
-use notify::{Event, RecursiveMode, Result, Watcher};
+use notify::{Event, EventKind, RecursiveMode, Result, Watcher, event::DataChange};
 use std::{path::Path, sync::mpsc, time::Instant};
 
 #[derive(Parser, Debug)]
@@ -63,13 +63,7 @@ fn main() -> Result<()> {
         };
 
         for txt in txt {
-            let mut i = 0;
-            while i < txt.len() {
-                if let Some((_, skip)) = emit_env.parse_tailwind_str(&txt[i..]) {
-                    i += skip;
-                }
-                i += 1;
-            }
+            emit_env.parse_full_string(txt.as_str());
         }
 
         let as_css = emit_env.to_css_stylesheet(!cli.no_preflight);
@@ -91,10 +85,22 @@ fn main() -> Result<()> {
         watcher.watch(Path::new(watch.as_str()), RecursiveMode::Recursive)?;
         run();
         println!("Watching... (Ctrl+C to exit)");
-        for _ in rx {
-            let inst = Instant::now();
-            run();
-            println!("Recompiled in {}ms.", inst.elapsed().as_millis());
+        for evt in rx {
+            match evt {
+                Ok(evt) => {
+                    if let EventKind::Modify(notify::event::ModifyKind::Data(DataChange::Content)) =
+                        evt.kind
+                    {
+                        let inst = Instant::now();
+                        run();
+                        println!("Recompiled in {}ms.", inst.elapsed().as_millis());
+                    }
+                }
+                Err(e) => {
+                    eprintln!("error: {e:?}, exiting...");
+                    return Err(e);
+                }
+            }
         }
     } else {
         run();

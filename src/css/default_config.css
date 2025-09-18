@@ -1,4 +1,11 @@
 @custom-variant starting (@starting-style);
+@custom-variant hover {
+    @media (hover: hover) {
+        &:hover {
+            @slot;
+        }
+    }
+}
 
 @utility aspect-square {
     aspect-ratio: 1 / 1;
