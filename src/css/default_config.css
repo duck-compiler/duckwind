@@ -3570,87 +3570,105 @@
 }
 
 @utility translate-* {
-    translate: calc(var(--spacing) * --value(number)) calc(var(--spacing) * --value(number));
-    translate: calc(--value(ratio) * 100%) calc(--value(ratio) * 100%);
-    translate: --value([*]) --value([*]);
+    --tw-translate-x: calc(var(--spacing) * --value(number)); --tw-translate-y: calc(var(--spacing) * --value(number)); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
+    --tw-translate-x: calc(--value(ratio) * 100%); --tw-translate-y: calc(--value(ratio) * 100%); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
+    --tw-translate-x: --value([*]); --tw-translate-y: --value([*]); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 
 @utility -translate-* {
-    translate: calc(var(--spacing) * ---value(number)) calc(var(--spacing) * ---value(number));
-    translate: calc(--value(ratio) * -100%) calc(--value(ratio) * -100%);
+    --tw-translate-x: calc(var(--spacing) * ---value(number)); --tw-translate-y: calc(var(--spacing) * ---value(number)); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
+    --tw-translate-x: calc(--value(ratio) * -100%); --tw-translate-y: calc(--value(ratio) * -100%); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility translate-full {
-translate: 100% 100%;
+    --tw-translate-x: 100%;
+    --tw-translate-y: 100%;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 
 @utility -translate-full {
-translate: -100% -100%;
+    --tw-translate-x: -100%;
+    --tw-translate-y: -100%;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 
 @utility translate-px {
-translate: 1px 1px;
+    --tw-translate-x: 1px;
+    --tw-translate-y: 1px;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility -translate-px {
-translate: -1px -1px;
+    --tw-translate-x: -1px;
+    --tw-translate-y: -1px;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 
 @utility translate-x-* {
-    translate: calc(var(--spacing) * --value(number)) var(--tw-translate-y);
-    translate: calc(--value(ratio) * 100%) var(--tw-translate-y);
-    translate: --value([*]) var(--tw-translate-y);
+    --tw-translate-x: calc(var(--spacing) * --value(number)); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
+    --tw-translate-x: calc(--value(ratio) * 100%); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
+    --tw-translate-x: --value([*]); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 
 @utility -translate-x-* {
-    translate: calc(var(--spacing) * ---value(number)) var(--tw-translate-y);
-    translate: calc(--value(ratio) * -100%) var(--tw-translate-y);
+    --tw-translate-x: calc(var(--spacing) * ---value(number)); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
+    --tw-translate-x: calc(--value(ratio) * -100%); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility translate-x-full {
-    translate: 100% var(--tw-translate-y);
+    --tw-translate-x: 100%;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility -translate-x-full {
-    translate: -100% var(--tw-translate-y);
+    --tw-translate-x: -100%;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility translate-x-px {
-    translate: 1px var(--tw-translate-y);
+    --tw-translate-x: 1px;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility -translate-x-px {
-    translate: -1px var(--tw-translate-y);
+    --tw-translate-x: -1px;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 
 @utility translate-y-* {
-    translate: var(--tw-translate-x) calc(var(--spacing) * --value(number));
-    translate: var(--tw-translate-x) calc(--value(ratio) * 100%);
-    translate: var(--tw-translate-x) --value([*]);
+    --tw-translate-y: calc(var(--spacing) * --value(number)); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
+    --tw-translate-y: calc(--value(ratio) * 100%); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
+    --tw-translate-y: --value([*]); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility -translate-y-* {
-    translate: var(--tw-translate-x) calc(var(--spacing) * ---value(number));
-    translate: var(--tw-translate-x) calc(--value(ratio) * -100%);
+    --tw-translate-y: calc(var(--spacing) * ---value(number)); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
+    --tw-translate-y: calc(--value(ratio) * -100%); translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility translate-y-full {
-    translate: var(--tw-translate-x) 100%;
+    --tw-translate-y: 100%;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility -translate-y-full {
-    translate: var(--tw-translate-x) -100%;
+    --tw-translate-y: -100%;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility translate-y-px {
-    translate: var(--tw-translate-x) 1px;
+    --tw-translate-y: 1px;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 @utility -translate-y-px {
-    translate: var(--tw-translate-x) -1px;
+    --tw-translate-y: -1px;
+    translate: var(--tw-translate-x, 0) var(--tw-translate-y, 0);
 }
 
 @utility translate-z-* {
-    translate: var(--tw-translate-x) var(--tw-translate-y) calc(var(--spacing) * --value(number));
-    translate: var(--tw-translate-x) var(--tw-translate-y) --value([*]);
+    --tw-translate-z: calc(var(--spacing) * --value(number)); translate: var(--tw-translate-x) var(--tw-translate-y) var(--tw-translate-z);
+    --tw-translate-z: --value([*]); translate: var(--tw-translate-x) var(--tw-translate-y) var(--tw-translate-z);
 }
 @utility -translate-z-* {
-    translate: var(--tw-translate-x) var(--tw-translate-y) calc(var(--spacing) * ---value(number));
+    --tw-translate-z: calc(var(--spacing) * ---value(number)); translate: var(--tw-translate-x) var(--tw-translate-y) var(--tw-translate-z);
 }
 @utility translate-z-px {
-    translate: var(--tw-translate-x) var(--tw-translate-y) 1px;
+    --tw-translate-z: 1px;
+    translate: var(--tw-translate-x) var(--tw-translate-y) var(--tw-translate-z);
 }
 @utility -translate-z-px {
-    translate: var(--tw-translate-x) var(--tw-translate-y) -1px;
+    --tw-translate-z: -1px;
+    translate: var(--tw-translate-x) var(--tw-translate-y) var(--tw-translate-z);
 }
 
 @utility translate-none {
