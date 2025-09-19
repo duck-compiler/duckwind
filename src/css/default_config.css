@@ -2156,16 +2156,22 @@
 }
 
 @utility from-* {
-    --tw-gradient-from: --value(color, [*]);
-    --tw-gradient-from-position: --value(percentage);
+    --tw-sort: --tw-gradient-from; --tw-gradient-from: var(--value(color, [color])); --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+    --tw-gradient-from-position: --value(position, [position]);
 }
+
+@utility via-none {
+    --tw-gradient-via-stops: initial;
+}
+
 @utility via-* {
-    --tw-gradient-via: --value(color, [*]);
-    --tw-gradient-via-position: --value(percentage);
+    --tw-sort: --tw-gradient-via; --tw-gradient-via: --value(color, [color]); --tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
+    --tw-gradient-via-position: --value(position, [position]);
 }
+
 @utility to-* {
-    --tw-gradient-to: --value(color, [*]);
-    --tw-gradient-to-position: --value(percentage);
+    --tw-sort: --tw-gradient-to; --tw-gradient-to: var(--value(color, [color])); --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+    --tw-gradient-to-position: --value(position, [position]);
 }
 
 @utility bg-origin-border {
