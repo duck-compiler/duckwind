@@ -52,6 +52,22 @@ pub fn parse_url<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, c
         .map(|x| format!("url({x})"))
 }
 
+pub fn parse_calc<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
+    just("calc(")
+        .ignore_then(
+            any()
+                .and_is(just(")").not())
+                .map(|c| match c {
+                    '+' | '-' | '*' | '/' => format!(" {c} "),
+                    _ => String::from(c),
+                })
+                .repeated()
+                .collect::<Vec<_>>(),
+        )
+        .then_ignore(just(")"))
+        .map(|x| format!("calc({})", x.join("")))
+}
+
 pub fn parse_raw_text<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone
 {
     recursive(|parser| {
@@ -63,6 +79,7 @@ pub fn parse_raw_text<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<
                         .ignore_then(parser.clone())
                         .map(|x| format!("[{x}]")),
                     parse_url(),
+                    parse_calc(),
                     any()
                         .and_is(just("\\_"))
                         .map(|_| String::from("_"))
@@ -136,12 +153,7 @@ pub fn lexer<'a>(
     })
     .repeated()
     .collect::<Vec<_>>()
-    .map_with(|x, e| {
-        (
-            x,
-            e.span().end,
-        )
-    })
+    .map_with(|x, e| (x, e.span().end))
     .then_ignore(any().repeated())
 }
 
