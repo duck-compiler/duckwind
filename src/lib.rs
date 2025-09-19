@@ -593,11 +593,11 @@ impl EmitEnv {
                         }
                     }
 
-                    // if let Some((tag, after)) = after
-                    //     && let Some(res) = body_to_set.as_mut()
-                    // {
-                    //     res.push_str(&format!("\n{tag}: {after};"));
-                    // }
+                    if let Some(SpecialParam::LineHeight(after)) = special_param.as_ref()
+                        && let Some(res) = body_to_set.as_mut()
+                    {
+                        res.push_str(&format!("\nline-height: {after};"));
+                    }
                 }
                 ParsedUnit::Raw(raw_value) => {
                     for utility in self.utilities.iter() {

@@ -286,7 +286,7 @@ fn insert_alpha(color: &str, alpha: &str) -> Option<String> {
             // since alpha value is the always last argument, we can just insert it at the end
             if let Some(closing_brace) = color.rfind(')') {
                 let mut result = color.clone();
-                result.insert_str(closing_brace, &format!("/ {alpha}"));
+                result.insert_str(closing_brace, &format!(" / {alpha}"));
                 return Some(result);
             }
         }
