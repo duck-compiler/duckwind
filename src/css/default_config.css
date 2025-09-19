@@ -2676,13 +2676,13 @@
 }
 
 @utility ring {
-    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(var(--default-ring-width, 1px) + var(--tw-ring-offset-width)) var(--default-ring-color, currentcolor);
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(var(--default-ring-width, 1px) + var(--tw-ring-offset-width)) var(--tw-ring-color, var(--default-ring-color, currentcolor));
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
 }
 
 @utility ring-* {
-    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(--value(number)px + var(--tw-ring-offset-width)) var(--default-ring-color, currentcolor); box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(--value(length) + var(--tw-ring-offset-width)) var(--default-ring-color, currentcolor); box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(--value(number)px + var(--tw-ring-offset-width)) var(--tw-ring-color, var(--default-ring-color, currentcolor)); box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+    --tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(--value(length) + var(--tw-ring-offset-width)) var(--tw-ring-color, var(--default-ring-color, currentcolor)); box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
     --tw-ring-color: --value([*]); box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
     --tw-ring-color: --value(--color-*, color); box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
 }
