@@ -2101,35 +2101,67 @@
 }
 
 @utility bg-linear-to-t {
-    background-image: linear-gradient(to top, var(--tw-gradient-stops));
+    --tw-gradient-position: to top;
+    @supports (background-image: linear-gradient(in lab, red, red)) {
+        --tw-gradient-position: to top in oklab;
+    }
+    background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility bg-linear-to-tr {
+    --tw-gradient-position: to top right;
+    @supports (background-image: linear-gradient(in lab, red, red)) {
+        --tw-gradient-position: to top right in oklab;
+    }
     background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility bg-linear-to-r {
-    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+    --tw-gradient-position: to right;
+    @supports (background-image: linear-gradient(in lab, red, red)) {
+        --tw-gradient-position: to right in oklab;
+    }
+    background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility bg-linear-to-br {
-    background-image: linear-gradient( to bottom right, var(--tw-gradient-stops) );
+    --tw-gradient-position: to bottom right;
+    @supports (background-image: linear-gradient(in lab, red, red)) {
+        --tw-gradient-position: to bottom right in oklab;
+    }
+    background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility bg-linear-to-b {
-    background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
+    --tw-gradient-position: to bottom;
+    @supports (background-image: linear-gradient(in lab, red, red)) {
+        --tw-gradient-position: to bottom in oklab;
+    }
+    background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility bg-linear-to-bl {
-    background-image: linear-gradient(to bottom left, var(--tw-gradient-stops));
+    --tw-gradient-position: to bottom left;
+    @supports (background-image: linear-gradient(in lab, red, red)) {
+        --tw-gradient-position: to bottom left in oklab;
+    }
+    background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility bg-linear-to-l {
-    background-image: linear-gradient(to left, var(--tw-gradient-stops));
+    --tw-gradient-position: to left;
+    @supports (background-image: linear-gradient(in lab, red, red)) {
+        --tw-gradient-position: to left in oklab;
+    }
+    background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility bg-linear-to-tl {
-    background-image: linear-gradient(to top left, var(--tw-gradient-stops));
+    --tw-gradient-position: to top left;
+    @supports (background-image: linear-gradient(in lab, red, red)) {
+        --tw-gradient-position: to top left in oklab;
+    }
+    background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility bg-linear-* {
@@ -2156,7 +2188,7 @@
 }
 
 @utility from-* {
-    --tw-gradient-from: var(--value(color, [color])); --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+    --tw-gradient-from: --value(color, [color]); --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
     --tw-gradient-from-position: --value(position, [position]);
 }
 
@@ -2170,7 +2202,7 @@
 }
 
 @utility to-* {
-    --tw-gradient-to: var(--value(color, [color])); --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+    --tw-gradient-to: --value(color, [color]); --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
     --tw-gradient-to-position: --value(position, [position]);
 }
 
