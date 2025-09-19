@@ -85,6 +85,12 @@ pub struct EmitEnv {
     pub defs_generated: HashSet<String>,
 }
 
+#[derive(Debug, Clone)]
+pub enum SpecialParam {
+    Transparency(String),
+    LineHeight(String),
+}
+
 impl Default for EmitEnv {
     fn default() -> Self {
         EmitEnv::new_with_default_config()
@@ -477,18 +483,8 @@ impl EmitEnv {
 
             match last.0 {
                 ParsedUnit::String(mut last_str) => {
-                    let mut after = None;
-                    if let Some((pre, special_param)) = last_str.split_once("/")
-                    {
-                        #[derive(Debug, Clone)]
-                        enum WhatIsIt {
-                            Opacity(String),
-                            LineHeight(String),
-                            Undefined,
-                        }
-
-                        let mut what_is_it = WhatIsIt::Undefined;
-
+                    let mut special_param = None;
+                    if let Some((pre, special_param_val)) = last_str.split_once("/") {
                         if pre_str.starts_with("text")
                             && self.theme.vars.contains_key(&format!(
                                 "text{}{}",
@@ -501,19 +497,21 @@ impl EmitEnv {
                                     .join("-")
                             ))
                         {
-                            if special_param.starts_with("[") && special_param.ends_with("]") {
-                                what_is_it = WhatIsIt::LineHeight(
-                                    special_param[1..special_param.len() - 1].to_string(),
-                                );
-                            } else {
-                                what_is_it = WhatIsIt::LineHeight(format!(
-                                    "calc(var(--spacing) * {})",
-                                    special_param
+                            if special_param_val.starts_with("[")
+                                && special_param_val.ends_with("]")
+                            {
+                                special_param = Some(SpecialParam::LineHeight(
+                                    special_param_val[1..special_param_val.len() - 1].to_string(),
                                 ));
+                            } else {
+                                special_param = Some(SpecialParam::LineHeight(format!(
+                                    "calc(var(--spacing) * {})",
+                                    special_param_val
+                                )));
                             }
                         }
 
-                        if matches!(what_is_it, WhatIsIt::Undefined) {
+                        if special_param.is_none() {
                             let idx = pre_str.find("-").unwrap_or(pre_str.len());
                             let after_idx = &pre_str[idx..];
                             if self.theme.vars.contains_key(&format!(
@@ -522,33 +520,31 @@ impl EmitEnv {
                                 if after_idx.is_empty() { "" } else { "-" },
                                 pre
                             )) {
-                                what_is_it = WhatIsIt::Opacity(format!("{special_param}%"));
+                                special_param = Some(SpecialParam::Transparency(format!(
+                                    "{special_param_val}%"
+                                )));
                             } else {
                                 let css_literal = data_type_parser().parse(pre).into_output();
                                 if let Some(css_literal) = css_literal {
                                     if matches!(css_literal, CssLiteral::Number(..)) {
-                                        what_is_it = WhatIsIt::LineHeight(format!(
+                                        special_param = Some(SpecialParam::LineHeight(format!(
                                             "calc(var(--spacing) * {})",
-                                            special_param
-                                        ));
+                                            special_param_val
+                                        )));
                                     } else if matches!(css_literal, CssLiteral::Color(..)) {
-                                        what_is_it =
-                                            WhatIsIt::Opacity(format!("{}%", special_param));
+                                        special_param = Some(SpecialParam::Transparency(format!(
+                                            "{}%",
+                                            special_param_val
+                                        )));
                                     }
                                 }
                             }
                         }
 
-                        match what_is_it {
-                            WhatIsIt::Opacity(s) => {
-                                after = Some(("opacity", s.to_string()));
-                                last_str = pre.to_string();
-                            }
-                            WhatIsIt::LineHeight(s) => {
-                                after = Some(("line-height", s.to_string()));
-                                last_str = pre.to_string();
-                            }
-                            _ => {}
+                        dbg!(&special_param);
+
+                        if special_param.is_some() {
+                            last_str = pre.to_string();
                         }
                     }
                     pre.push(last_str.clone());
@@ -557,7 +553,12 @@ impl EmitEnv {
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == full.as_str()
                             && !utility.has_value
-                            && let Ok(res) = utility.instantiate(&self.theme, None, false)
+                            && let Ok(res) = utility.instantiate(
+                                &self.theme,
+                                None,
+                                special_param.as_ref(),
+                                false,
+                            )
                         {
                             body_to_set = Some(res);
                         }
@@ -569,6 +570,7 @@ impl EmitEnv {
                             && let Ok(res) = utility.instantiate(
                                 &self.theme,
                                 Some(&full[&utility.name.len() + 1..]),
+                                special_param.as_ref(),
                                 false,
                             )
                         {
@@ -579,26 +581,34 @@ impl EmitEnv {
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == pre_str.as_str()
                             && utility.has_value
-                            && let Ok(res) =
-                                utility.instantiate(&self.theme, Some(last_str.as_str()), false)
+                            && let Ok(res) = utility.instantiate(
+                                &self.theme,
+                                Some(last_str.as_str()),
+                                special_param.as_ref(),
+                                false,
+                            )
                         {
                             println!("{}", utility.name);
                             body_to_set = Some(res);
                         }
                     }
 
-                    if let Some((tag, after)) = after
-                        && let Some(res) = body_to_set.as_mut()
-                    {
-                        res.push_str(&format!("\n{tag}: {after};"));
-                    }
+                    // if let Some((tag, after)) = after
+                    //     && let Some(res) = body_to_set.as_mut()
+                    // {
+                    //     res.push_str(&format!("\n{tag}: {after};"));
+                    // }
                 }
                 ParsedUnit::Raw(raw_value) => {
                     for utility in self.utilities.iter() {
                         if utility.name.as_str() == pre_str.as_str()
                             && utility.has_value
-                            && let Ok(res) =
-                                utility.instantiate(&self.theme, Some(raw_value.as_str()), true)
+                            && let Ok(res) = utility.instantiate(
+                                &self.theme,
+                                Some(raw_value.as_str()),
+                                None,
+                                true,
+                            )
                         {
                             body_to_set = Some(res);
                         }

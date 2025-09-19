@@ -9,6 +9,7 @@ use chumsky::{
 };
 
 use crate::{
+    SpecialParam,
     css_literals::{CssLiteral, data_type_parser},
     ignore_whitespace, ignore_whitespace2,
 };
@@ -54,6 +55,7 @@ impl Utility {
         &self,
         theme: &Theme,
         value: Option<&str>,
+        special_param: Option<&SpecialParam>,
         is_arb: bool,
     ) -> Result<String, UtilityInstantiationError> {
         if self.has_value {
@@ -87,7 +89,9 @@ impl Utility {
             let part = &self.parts[i];
             if let ParsedCodePart::ValueCall(call) = part {
                 for p in call.params.iter() {
-                    if let Some(replacement) = p.literal_matches(theme, value, &literal, is_arb) {
+                    if let Some(replacement) =
+                        p.literal_matches(theme, value, &literal, special_param.clone(), is_arb)
+                    {
                         let mut res_string = String::new();
 
                         if i > 0 {
@@ -111,13 +115,18 @@ impl Utility {
                                     ParsedCodePart::ValueCall(value_call) => {
                                         if let Some(replacement) =
                                             value_call.params.iter().find_map(|param| {
-                                                param
-                                                    .literal_matches(theme, value, &literal, is_arb)
+                                                param.literal_matches(
+                                                    theme,
+                                                    value,
+                                                    &literal,
+                                                    special_param.clone(),
+                                                    is_arb,
+                                                )
                                             })
                                         {
                                             res_string.insert_str(
                                                 0,
-                                                replacement.map(String::as_str).unwrap_or(value),
+                                                &replacement.unwrap_or_else(|| value.to_string()),
                                             );
                                         } else {
                                             i += 1;
@@ -133,7 +142,7 @@ impl Utility {
                             }
                         }
 
-                        res_string.push_str(replacement.map(String::as_str).unwrap_or(value));
+                        res_string.push_str(&replacement.unwrap_or_else(|| value.to_string()));
 
                         // Find end of line
                         let mut i_forward = i + 1;
@@ -155,11 +164,17 @@ impl Utility {
                                 ParsedCodePart::ValueCall(value_call) => {
                                     if let Some(replacement) =
                                         value_call.params.iter().find_map(|param| {
-                                            param.literal_matches(theme, value, &literal, is_arb)
+                                            param.literal_matches(
+                                                theme,
+                                                value,
+                                                &literal,
+                                                special_param.clone(),
+                                                is_arb,
+                                            )
                                         })
                                     {
                                         res_string.push_str(
-                                            replacement.map(String::as_str).unwrap_or(value),
+                                            &replacement.unwrap_or_else(|| value.to_string()),
                                         );
                                     } else {
                                         i += 1;
@@ -224,16 +239,84 @@ pub enum ValueUsage {
     Var(String, usize),
 }
 
+fn expand_3_digit_hex(hex: &str) -> String {
+    hex.chars()
+        .take(3)
+        .fold(String::with_capacity(6), |mut acc, c| {
+            acc.push(c);
+            acc.push(c);
+            acc
+        })
+}
+
+/// alpha given like so: 100%, 0%, 20%
+fn insert_alpha(color: &str, alpha: &str) -> Option<String> {
+    let color = color.trim_ascii_start().to_string();
+    if color.starts_with("#") {
+        let percent_value = alpha[..alpha.len() - 1].parse::<f32>().ok()?;
+        let hex_alpha_channel = format!(
+            "{:02X}",
+            if alpha == "100%" {
+                255
+            } else if alpha == "0%" {
+                0
+            } else {
+                ((255_f32 / 100_f32) * percent_value)
+                    .clamp(0_f32, 255_f32)
+                    .round() as i32
+            }
+        );
+
+        if color.len() == 4 {
+            // is 3 digit notation
+            return Some(format!(
+                "#{}{hex_alpha_channel}",
+                expand_3_digit_hex(&color[1..]),
+            ));
+        } else if color.len() == 7 {
+            // is 6 digit notation
+            return Some(format!("#{color}{hex_alpha_channel}"));
+        }
+    } else if ["rgb", "hsl", "lab", "lch", "oklab", "oklch", "color"]
+        .into_iter()
+        .any(|prefix| color.starts_with(prefix))
+    {
+        // check if color already contains alpha value
+        if !color.contains("/") {
+            // since alpha value is the always last argument, we can just insert it at the end
+            if let Some(closing_brace) = color.rfind(')') {
+                let mut result = color.clone();
+                result.insert_str(closing_brace, &format!("/ {alpha}"));
+                return Some(result);
+            }
+        }
+    }
+    None
+}
+
 impl ValueUsage {
     pub fn literal_matches<'a>(
         &self,
         theme: &'a Theme,
         value: &str,
         css_literal_src: &CssLiteral,
+        special_param: Option<&SpecialParam>,
         is_arb: bool,
-    ) -> Option<Option<&'a String>> {
+    ) -> Option<Option<String>> {
         match self {
-            ValueUsage::Type(t) if !is_arb && t.css_literal_matches(css_literal_src) => Some(None),
+            ValueUsage::Type(t) if !is_arb && t.css_literal_matches(css_literal_src) => {
+                if let CssLiteral::Color(..) = css_literal_src
+                    && let Some(SpecialParam::Transparency(t)) = special_param
+                    && let Some(with_alpha) = {
+                        dbg!(&value, &t);
+                        dbg!(insert_alpha(value, t.as_str()))
+                    }
+                {
+                    return Some(Some(with_alpha));
+                }
+
+                Some(None)
+            }
             ValueUsage::ArbType(t) if is_arb && t.css_literal_matches(css_literal_src) => {
                 Some(None)
             }
@@ -250,7 +333,12 @@ impl ValueUsage {
                 let mut to_check = var.clone();
                 to_check.insert_str(*to_insert, value);
                 if let Some(value) = theme.vars.get(to_check.as_str()) {
-                    Some(Some(value))
+                    if let Some(SpecialParam::Transparency(t)) = special_param
+                        && let Some(inserted) = insert_alpha(value, t.as_str())
+                    {
+                        return Some(Some(inserted));
+                    }
+                    Some(Some(value.to_owned()))
                 } else {
                     None
                 }

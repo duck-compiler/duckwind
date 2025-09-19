@@ -463,6 +463,16 @@ pub fn color_parser<'a>() -> impl Parser<'a, &'a str, Color, extra::Err<Rich<'a,
                     .collect::<String>(),
             )
             .map(Color::Hex),
+        just("#")
+            .ignore_then(
+                any()
+                    .filter(|x: &char| x.is_ascii_hexdigit())
+                    .repeated()
+                    .at_least(3)
+                    .at_most(3)
+                    .collect::<String>(),
+            )
+            .map(Color::Hex),
         choice((
             just("black"),
             just("silver"),

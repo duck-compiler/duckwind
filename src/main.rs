@@ -45,9 +45,6 @@ fn main() -> Result<()> {
             EmitEnv::new_with_default_config()
         };
 
-        dbg!(emit_env.parse_tailwind_str("-translate-x-1/2"));
-        return;
-
         for config_to_load in &cli.config {
             let config_src = std::fs::read_to_string(config_to_load.as_str())
                 .expect(&format!("couldn't load config {config_to_load}"));
