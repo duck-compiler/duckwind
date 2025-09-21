@@ -99,10 +99,14 @@ impl Default for EmitEnv {
 }
 
 impl EmitEnv {
-    pub fn parse_full_string(&mut self, txt: &str) {
+    pub fn parse_full_string<'prefix, 'text>(
+        &mut self,
+        prefix: Option<&'prefix str>,
+        txt: &'text str,
+    ) {
         let mut i = 0;
         while i < txt.len() {
-            if let Some((_, skip)) = self.parse_tailwind_str(&txt[i..]) {
+            if let Some((_, skip)) = self.parse_tailwind_str(prefix, &txt[i..]) {
                 i += skip;
             }
             i += 1;
@@ -456,8 +460,21 @@ impl EmitEnv {
         result
     }
 
-    pub fn parse_tailwind_str(&mut self, mut src: &str) -> Option<(CssDef, usize)> {
+    pub fn parse_tailwind_str<'prefix, 'src>(
+        &mut self,
+        prefix: Option<&'prefix str>,
+        mut src: &'src str,
+    ) -> Option<(CssDef, usize)> {
         let leaked = src.to_string().leak() as &'static str;
+
+        if let Some(prefix) = prefix {
+            if !src.starts_with(prefix) {
+                return None;
+            }
+
+            src = &src[prefix.len()..];
+        }
+
         let (toks, end) = lexer("test", leaked).parse(src).into_output()?;
         src = &src[..end];
 
@@ -472,7 +489,7 @@ impl EmitEnv {
             return None;
         }
 
-        css_def.class_name = class_name;
+        css_def.class_name = format!("{}{class_name}", prefix.unwrap_or_default());
 
         let mut body_to_set = None;
 

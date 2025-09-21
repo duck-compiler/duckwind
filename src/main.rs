@@ -33,6 +33,12 @@ struct Args {
         help = "watch a file, relaunching with the same parameters if it changes (requires out file)"
     )]
     watch: Option<String>,
+    #[arg(
+        long,
+        short = 'p',
+        help = "configure a prefix to be used for the tailwind classes"
+    )]
+    prefix: Option<String>,
 }
 
 fn main() -> Result<()> {
@@ -45,11 +51,11 @@ fn main() -> Result<()> {
             EmitEnv::new_with_default_config()
         };
 
-        // dbg!(emit_env.parse_tailwind_str("mask--100"));
-        // dbg!(emit_env.parse_tailwind_str("text-red-200/30"));
-        dbg!(emit_env.parse_tailwind_str("mask-y-from-100"));
-        dbg!(emit_env.to_css_stylesheet(false));
-        return ;
+        // // dbg!(emit_env.parse_tailwind_str("mask--100"));
+        // // dbg!(emit_env.parse_tailwind_str("text-red-200/30"));
+        // dbg!(emit_env.parse_tailwind_str(Some("tw-"), "tw-mask-y-from-100"));
+        // // dbg!(emit_env.to_css_stylesheet(false));
+        // return;
 
         for config_to_load in &cli.config {
             let config_src = std::fs::read_to_string(config_to_load.as_str())
@@ -69,7 +75,7 @@ fn main() -> Result<()> {
         };
 
         for txt in txt {
-            emit_env.parse_full_string(txt.as_str());
+            emit_env.parse_full_string(cli.prefix.as_deref(), txt.as_str());
         }
 
         let as_css = emit_env.to_css_stylesheet(!cli.no_preflight);
