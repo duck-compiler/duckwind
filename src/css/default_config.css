@@ -2165,26 +2165,35 @@
 }
 
 @utility bg-linear-* {
-    background-image: linear-gradient( --value(angle, [*]) in oklab, var(--tw-gradient-stops) );
+    --tw-tradient-position: --value(angle, [angle], [*]); background-image: linear-gradient(var(--tw-gradient-stops, --value(angle, [angle])));
+    --tw-tradient-position: --value(number)deg; background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility -bg-linear-* {
-    background-image: linear-gradient( ---value(angle) in oklab, var(--tw-gradient-stops) );
+    --tw-tradient-position: calc(--value(angle, [angle]) * -1); background-image: linear-gradient(var(--tw-gradient-stops, --value(angle, [angle])));
+    --tw-tradient-position: calc(--value(number)deg * -1); background-image: linear-gradient(var(--tw-gradient-stops));
 }
 
 @utility bg-radial {
-    background-image: radial-gradient(in oklab, var(--tw-gradient-stops));
+    --tw-gradient-position: in oklab;
+    background-image: radial-gradient(var(--tw-gradient-stops));
 }
 @utility bg-radial-* {
-    background-image: radial-gradient( --value([*]) in oklab, var(--tw-gradient-stops) );
+    --tw-gradient-position: --value([*]); background-image: radial-gradient(var(--tw-gradient-stops, --value([*])));
+}
+
+@utility bg-conic {
+    --tw-gradient-position: in oklab;
+    background-image: conic-gradient(var(--tw-gradient-position));
 }
 
 @utility bg-conic-* {
-    background-image: conic-gradient( from --value(angle, [*]) in oklab, var(--tw-gradient-stops) );
+    --tw-gradient-position: --value(number)deg; background-image: conic-gradient(var(--tw-gradient-position));
+    --tw-gradient-position: --value([*]); background-image: conic-gradient(var(--tw-gradient-position, --value([*])));
 }
 
 @utility -bg-conic-* {
-    background-image: conic-gradient( from ---value(angle) in oklab, var(--tw-gradient-stops) );
+    --tw-gradient-position: calc(--value(number)deg * -1); background-image: conic-gradient(var(--tw-gradient-position));
 }
 
 @utility from-* {
