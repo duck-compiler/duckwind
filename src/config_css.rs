@@ -31,10 +31,37 @@ impl Variant {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct Property {
+    pub name: String,
+    pub default_value: Option<String>,
+    pub syntax: Option<String>,
+}
+
+impl Property {
+    pub fn to_css_def(&self) -> String {
+        if let Some(default_value) = self.default_value.as_ref() {
+            format!(
+                "@property {} {{\nsyntax: \"{}\";\ninitial-value: {};\ninherits: false;\n}}\n",
+                self.name,
+                self.syntax.as_ref().map(String::as_str).unwrap_or("*"),
+                default_value
+            )
+        } else {
+            format!(
+                "@property {} {{\nsyntax: \"{}\";\ninherits: false;\n}}\n",
+                self.name,
+                self.syntax.as_ref().map(String::as_str).unwrap_or("*"),
+            )
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Utility {
     pub name: String,
     pub parts: Vec<ParsedCodePart>,
     pub has_value: bool,
+    pub properties: Vec<Property>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -443,6 +470,7 @@ pub fn parse_value_call<'a>()
 enum RawParsedCodePart {
     Char(char),
     ValueCall(ValueCall),
+    Property(Property),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -737,10 +765,69 @@ pub fn config_parser<'a>() -> impl Parser<'a, &'a str, UserConfig, extra::Err<Ri
     })
 }
 
+pub fn parse_braces_into_string<'a>()
+-> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, char>>> + Clone {
+    recursive(|s| {
+        just("(")
+            .ignore_then(
+                choice((
+                    just("(")
+                        .rewind()
+                        .ignore_then(s.clone())
+                        .map(|x: String| format!("({x})")),
+                    any().and_is(just(")").not()).map(|x| String::from(x)),
+                ))
+                .repeated()
+                .collect::<Vec<_>>(),
+            )
+            .then_ignore(just(")"))
+            .map(|v| format!("({})", v.join("")))
+    })
+}
+
 fn parse_utility_text<'a>()
 -> impl Parser<'a, &'a str, Vec<RawParsedCodePart>, extra::Err<Rich<'a, char>>> {
     recursive(|s| {
         choice((
+            just("@tw-property")
+                .then_ignore(ignore_whitespace2())
+                .ignore_then(
+                    any()
+                        .filter(|c: &char| !c.is_whitespace() && *c != ';')
+                        .repeated()
+                        .at_least(1)
+                        .collect::<String>(),
+                )
+                .then_ignore(ignore_whitespace2())
+                .then(
+                    (choice((
+                        parse_braces_into_string(),
+                        any().map(|c: char| String::from(c)),
+                    ))
+                    .and_is(just(";").not())
+                    .and_is(any().filter(|c: &char| c.is_whitespace()).not()))
+                    .repeated()
+                    .at_least(1)
+                    .collect::<Vec<_>>()
+                    .map(|v| v.join(""))
+                    .or_not(),
+                )
+                .then_ignore(ignore_whitespace2())
+                .then(
+                    any()
+                        .filter(|c: &char| !c.is_whitespace() && *c != ';')
+                        .repeated()
+                        .at_least(1)
+                        .collect::<String>()
+                        .or_not(),
+                )
+                .map(|((name, default_value), syntax)| {
+                    vec![RawParsedCodePart::Property(Property {
+                        name,
+                        default_value,
+                        syntax,
+                    })]
+                }),
             just("{")
                 .ignore_then(s.clone())
                 .map(|mut x: Vec<RawParsedCodePart>| {
@@ -769,6 +856,7 @@ pub fn parse_utility<'a>() -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<
         .map(|(name, content)| {
             let mut parts = Vec::new();
             let mut buf = String::new();
+            let mut properties = Vec::new();
 
             for c in content {
                 match c {
@@ -780,6 +868,7 @@ pub fn parse_utility<'a>() -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<
                         }
                         parts.push(ParsedCodePart::ValueCall(e));
                     }
+                    RawParsedCodePart::Property(property) => properties.push(property),
                 }
             }
 
@@ -797,6 +886,7 @@ pub fn parse_utility<'a>() -> impl Parser<'a, &'a str, Utility, extra::Err<Rich<
                 },
                 parts,
                 has_value,
+                properties,
             }
         })
 }

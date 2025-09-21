@@ -45,7 +45,10 @@ fn main() -> Result<()> {
             EmitEnv::new_with_default_config()
         };
 
-        dbg!(emit_env.parse_tailwind_str("text-red-200/30"));
+        // dbg!(emit_env.parse_tailwind_str("mask--100"));
+        // dbg!(emit_env.parse_tailwind_str("text-red-200/30"));
+        dbg!(emit_env.parse_tailwind_str("mask-y-from-100"));
+        dbg!(emit_env.to_css_stylesheet(false));
         return ;
 
         for config_to_load in &cli.config {

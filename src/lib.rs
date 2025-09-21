@@ -6,7 +6,7 @@ use std::{
 use chumsky::{IterParser, Parser, container::Container, error::Rich, extra, prelude::any};
 
 use crate::{
-    config_css::{Theme, Utility, Variant, config_parser},
+    config_css::{Property, Theme, Utility, Variant, config_parser},
     css_literals::{CssLiteral, data_type_parser},
     lexer::{DWS, empty_span, lexer},
     parser::{ParsedUnit, duckwind_parser, make_eoi, make_input},
@@ -83,6 +83,7 @@ pub struct EmitEnv {
     pub variants: Vec<Variant>,
     pub theme: Theme,
     pub defs_generated: HashSet<String>,
+    pub custom_properties: Vec<Property>,
 }
 
 #[derive(Debug, Clone)]
@@ -382,6 +383,7 @@ impl EmitEnv {
                 keyframes: HashMap::new(),
             },
             defs_generated: HashSet::new(),
+            custom_properties: Vec::new(),
         };
         res.load_config(DEFAULT_CONFIG);
         res.load_config(THEME_CONFIG);
@@ -398,6 +400,7 @@ impl EmitEnv {
                 keyframes: HashMap::new(),
             },
             defs_generated: HashSet::new(),
+            custom_properties: Vec::new(),
         };
         res
     }
@@ -439,6 +442,16 @@ impl EmitEnv {
         for def in self.defs.iter() {
             result.push_str(&def.to_css());
         }
+
+        result.push('\n');
+
+        self.custom_properties
+            .iter()
+            .map(|prop| prop.to_css_def())
+            .for_each(|prop_css| {
+                result.push_str(&prop_css);
+                result.push('\n');
+            });
 
         result
     }
@@ -541,8 +554,6 @@ impl EmitEnv {
                             }
                         }
 
-                        dbg!(&special_param);
-
                         if special_param.is_some() {
                             last_str = pre.to_string();
                         }
@@ -560,6 +571,8 @@ impl EmitEnv {
                                 false,
                             )
                         {
+                            self.custom_properties
+                                .extend_from_slice(&utility.properties);
                             body_to_set = Some(res);
                         }
                     }
@@ -574,6 +587,8 @@ impl EmitEnv {
                                 false,
                             )
                         {
+                            self.custom_properties
+                                .extend_from_slice(&utility.properties);
                             body_to_set = Some(res);
                         }
                     }
@@ -588,7 +603,8 @@ impl EmitEnv {
                                 false,
                             )
                         {
-                            println!("{}", utility.name);
+                            self.custom_properties
+                                .extend_from_slice(&utility.properties);
                             body_to_set = Some(res);
                         }
                     }
@@ -610,6 +626,8 @@ impl EmitEnv {
                                 true,
                             )
                         {
+                            self.custom_properties
+                                .extend_from_slice(&utility.properties);
                             body_to_set = Some(res);
                         }
                     }
