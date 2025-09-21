@@ -2811,6 +2811,8 @@
 }
 
 @utility mask-* {
+    mask-position: --value(percentage, [percentage], position, [position]);
+    mask-size: --value(length, [length]);
     mask-image: --value("none", [*]);
 }
 
