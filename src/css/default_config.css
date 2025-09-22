@@ -1381,7 +1381,7 @@
 @utility min-w-* {
     min-width: calc(var(--spacing) * --value(number));
     min-width: calc(--value(ratio) * 100%);
-    min-width: --value("auto", --container-*, [*]);
+    min-width: --value("auto", "none", --container-*, [*]);
 }
 @utility min-w-px {
     min-width: 1px;
@@ -1423,7 +1423,7 @@
 @utility max-w-* {
     max-width: calc(var(--spacing) * --value(number));
     max-width: calc(--value(ratio) * 100%);
-    max-width: --value("auto", --container-*, [*]);
+    max-width: --value("auto", "none", --container-*, [*]);
 }
 @utility max-w-px {
     max-width: 1px;
