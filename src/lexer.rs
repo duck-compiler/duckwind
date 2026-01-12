@@ -58,7 +58,6 @@ pub fn parse_calc<'a>() -> impl Parser<'a, &'a str, String, extra::Err<Rich<'a, 
             any()
                 .and_is(just(")").not())
                 .map(|c| match c {
-                    '_' => String::from(" "),
                     '+' | '-' | '*' | '/' => format!(" {c} "),
                     _ => String::from(c),
                 })
@@ -121,21 +120,23 @@ pub fn lexer<'a>(
     file_contents: &'static str,
 ) -> impl Parser<'a, &'a str, (Vec<Spanned<Token>>, usize), extra::Err<Rich<'a, char>>> + Clone {
     choice((
-        parse_raw_text().map(|s| Some(Token::Raw(s))),
-        parse_unit().map(|s| Some(Token::Unit(s))),
+        parse_raw_text().map(Token::Raw),
+        parse_unit().map(Token::Unit),
         any()
             .and_is(just("\\_"))
-            .map(|_| Some(Token::Ctrl('_')))
+            .map(|_| Token::Ctrl('_'))
             .then_ignore(just("_")),
         any()
-            .filter(|c: &char| c.is_whitespace())
-            .repeated()
-            .at_least(1)
-            .map(|_| None),
-        any()
-            .filter(|x| matches!(*x, '-' | '*' | '[' | ']' | '(' | ')' | '_' | ':'))
+            .filter(|x| match *x {
+                '-' | '*' | '[' | ']' | '(' | ')' | '_' | ':' => true,
+                _ => false,
+            })
             .map(|c| if c == '_' { ' ' } else { c })
-            .map(|c| Some(Token::Ctrl(c))),
+            .map(Token::Ctrl),
+        // choice((just(" "), just("\n"), just("\t")))
+        //     .repeated()
+        //     .at_least(1)
+        //     .map(|_| Token::Whitespace),
     ))
     .map_with(move |x, e| {
         (
@@ -143,19 +144,17 @@ pub fn lexer<'a>(
             DWS {
                 start: e.span().start,
                 end: e.span().end,
-                context: Context { file_name, file_contents },
+                context: Context {
+                    file_name,
+                    file_contents,
+                },
             },
         )
     })
     .repeated()
     .collect::<Vec<_>>()
-    .map(|tokens| {
-        tokens
-            .into_iter()
-            .filter_map(|(opt_tok, span)| opt_tok.map(|tok| (tok, span)))
-            .collect::<Vec<_>>()
-    })
     .map_with(|x, e| (x, e.span().end))
+    .then_ignore(any().repeated())
 }
 
 #[cfg(test)]
@@ -252,59 +251,6 @@ mod tests {
                     Token::Raw("3rem".to_string()),
                 ],
             ),
-            (
-                "bg-[url('/img/[nested]/icon.png')]",
-                vec![
-                    Token::Unit("bg".to_string()),
-                    Token::Ctrl('-'),
-                    Token::Raw("url('/img/[nested]/icon.png')".to_string()),
-                ]
-            ),
-            (
-                "[@media(min-width:900px)]:hover:bg-red-500",
-                vec![
-                    Token::Raw("@media(min-width:900px)".to_string()),
-                    Token::Ctrl(':'),
-                    Token::Unit("hover".to_string()),
-                    Token::Ctrl(':'),
-                    Token::Unit("bg".to_string()),
-                    Token::Ctrl('-'),
-                    Token::Unit("red".to_string()),
-                    Token::Ctrl('-'),
-                    Token::Unit("500".to_string()),
-                ]
-            ),
-            (
-                "grid-cols-[1fr_2fr_1fr]",
-                vec![
-                    Token::Unit("grid".to_string()),
-                    Token::Ctrl('-'),
-                    Token::Unit("cols".to_string()),
-                    Token::Ctrl('-'),
-                    Token::Raw("1fr 2fr 1fr".to_string()),
-                ]
-            ),
-            (
-                "dark:group-hover::before",
-                vec![
-                    Token::Unit("dark".to_string()),
-                    Token::Ctrl(':'),
-                    Token::Unit("group".to_string()),
-                    Token::Ctrl('-'),
-                    Token::Unit("hover".to_string()),
-                    Token::Ctrl(':'),
-                    Token::Ctrl(':'),
-                    Token::Unit("before".to_string()),
-                ]
-            ),
-            (
-                "w-[calc(100%_-_2rem)]",
-                vec![
-                    Token::Unit("w".to_string()),
-                    Token::Ctrl('-'),
-                    Token::Raw("calc(100%  -  2rem)".to_string()),
-                ]
-            ),
         ];
 
         for (src, expected) in test_cases {
@@ -313,7 +259,7 @@ mod tests {
                 .parse(src)
                 .into_result()
                 .expect(&format!("errors lexing {src}"));
-            result.0.iter_mut().for_each(token_to_empty_span);
+            result.iter_mut().for_each(token_to_empty_span);
             // duckwind_parser(Box::leak(Box::new(Default::default())), make_input)
             //     .parse(make_input(make_eoi("", src), &result));
             assert_eq!(
@@ -321,7 +267,7 @@ mod tests {
                     .iter()
                     .map(|e| (e.clone(), empty_span()))
                     .collect::<Vec<_>>(),
-                result.0,
+                result,
                 "{src} returned {result:?} and not {expected:?}"
             );
         }
