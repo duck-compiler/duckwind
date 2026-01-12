@@ -99,10 +99,10 @@ impl Default for EmitEnv {
 }
 
 impl EmitEnv {
-    pub fn parse_full_string<'prefix, 'text>(
+    pub fn parse_full_string<'prefix>(
         &mut self,
         prefix: Option<&'prefix str>,
-        txt: &'text str,
+        txt: &'static str,
     ) {
         let mut i = 0;
         while i < txt.len() {
@@ -460,13 +460,11 @@ impl EmitEnv {
         result
     }
 
-    pub fn parse_tailwind_str<'prefix, 'src>(
+    pub fn parse_tailwind_str<'prefix>(
         &mut self,
         prefix: Option<&'prefix str>,
-        mut src: &'src str,
+        mut src: &'static str,
     ) -> Option<(CssDef, usize)> {
-        let leaked = src.to_string().leak() as &'static str;
-
         if let Some(prefix) = prefix {
             if !src.starts_with(prefix) {
                 return None;
@@ -475,11 +473,11 @@ impl EmitEnv {
             src = &src[prefix.len()..];
         }
 
-        let (toks, end) = lexer("test", leaked).parse(src).into_output()?;
+        let (toks, end) = lexer("test", src).parse(src).into_output()?;
         src = &src[..end];
 
         let parsed = duckwind_parser(make_input)
-            .parse(make_input(make_eoi("test", leaked), toks.as_slice()))
+            .parse(make_input(make_eoi("test", src), toks.as_slice()))
             .into_output()?;
 
         let mut css_def = CssDef::default();

@@ -75,7 +75,7 @@ fn main() -> Result<()> {
         };
 
         for txt in txt {
-            emit_env.parse_full_string(cli.prefix.as_deref(), txt.as_str());
+            emit_env.parse_full_string(cli.prefix.as_deref(), txt.leak());
         }
 
         let as_css = emit_env.to_css_stylesheet(!cli.no_preflight);
